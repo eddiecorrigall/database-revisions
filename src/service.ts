@@ -9,7 +9,9 @@ export class MigrationServiceError extends Error {}
 export interface IDatabaseConnectionManager<Client> {
   shutdown: () => Promise<void>
   ping: () => Promise<void>
-  transaction: <Data>(callback: (client: Client) => Promise<Data | undefined>) => Promise<Data | undefined>
+  transaction: <Data>(
+    callback: (client: Client) => Promise<Data | undefined>
+  ) => Promise<Data | undefined>
 }
 
 export interface IRevision {
@@ -30,23 +32,42 @@ export interface IPersistenceFacade<Client> {
   releaseExclusiveLock: (client: Client) => Promise<void>
 
   // (Idempotent) Get the current version for the given namespace
-  fetchCurrentRevision: (client: Client, namespace: string) => Promise<IRevision | undefined>
+  fetchCurrentRevision: (
+    client: Client,
+    namespace: string
+  ) => Promise<IRevision | undefined>
 
   // (Idempotent) Set the current version for the given namespace
-  setCurrentRevision: (client: Client, namespace: string, revision: IRevision) => Promise<void>
+  setCurrentRevision: (
+    client: Client,
+    namespace: string,
+    revision: IRevision
+  ) => Promise<void>
 
   // Remove the namespace (and the revision from persistence)
   removeNamespace: (client: Client, namespace: string) => Promise<void>
 }
 
 export interface IDatabaseMigrationService<Client> {
-  fetchCurrentVersion: (client: Client, namespace: string) => Promise<string | undefined>
+  fetchCurrentVersion: (
+    client: Client,
+    namespace: string
+  ) => Promise<string | undefined>
   computeRevisions: (revisionDirectory: string) => IRevision[]
-  upgrade: (client: Client, namespace: string, revisionDirectory: string) => Promise<{ initialRevision?: IRevision, finalRevision?: IRevision }>
-  downgrade: (client: Client, namespace: string, revisionDirectory: string) => Promise<{ initialRevision?: IRevision, finalRevision?: IRevision }>
+  upgrade: (
+    client: Client,
+    namespace: string,
+    revisionDirectory: string
+  ) => Promise<{ initialRevision?: IRevision, finalRevision?: IRevision }>
+  downgrade: (
+    client: Client,
+    namespace: string,
+    revisionDirectory: string
+  ) => Promise<{ initialRevision?: IRevision, finalRevision?: IRevision }>
 }
 
-export class DatabaseMigrationService<Client> implements IDatabaseMigrationService<Client> {
+export class DatabaseMigrationService<Client>
+implements IDatabaseMigrationService<Client> {
   private readonly dao: IPersistenceFacade<Client>
 
   private readonly logger: ILogger
@@ -56,7 +77,10 @@ export class DatabaseMigrationService<Client> implements IDatabaseMigrationServi
     this.logger = options.logger ?? getLogger(DatabaseMigrationService.name)
   }
 
-  public async fetchCurrentVersion (client: Client, namespace: string): Promise<string | undefined> {
+  public async fetchCurrentVersion (
+    client: Client,
+    namespace: string
+  ): Promise<string | undefined> {
     const revision = await this.dao.fetchCurrentRevision(client, namespace)
     return revision?.version
   }
@@ -96,7 +120,7 @@ export class DatabaseMigrationService<Client> implements IDatabaseMigrationServi
     namespace: string,
     revisionDirectory: string
   ): Promise<{ initialRevision?: IRevision, finalRevision?: IRevision }> {
-    // Upgrade to latest version - version will change by zero or more pending revisions
+    // Upgrade to latest version - apply zero or more pending revisions
 
     /* IMPORTANT
      *
@@ -114,13 +138,14 @@ export class DatabaseMigrationService<Client> implements IDatabaseMigrationServi
     // TODO: verify path from final revision to initial revision
 
     let initialRevisionIndex
-    const initialRevisionVersion = await this.fetchCurrentVersion(client, namespace)
+    const initialRevisionVersion =
+      await this.fetchCurrentVersion(client, namespace)
 
-    // Determine index of the first pending revision
-    let nextRevisionIndex
+    // Determine index of the next pending revision
+    let nextPendingRevisionIndex
     if (initialRevisionVersion === undefined) {
       // All revisions are pending
-      nextRevisionIndex = 0
+      nextPendingRevisionIndex = 0
     } else {
       initialRevisionIndex = revisions.findIndex(
         (revision) => revision.version === initialRevisionVersion
@@ -131,9 +156,7 @@ export class DatabaseMigrationService<Client> implements IDatabaseMigrationServi
         // or the files have been retro-actively modified.
         throw new MigrationServiceError('cannot resolve upgrade path')
       }
-      // Increment the index to the first pending revision, not the current version,
-      // since the revision has already been applied.
-      nextRevisionIndex = initialRevisionIndex + 1
+      nextPendingRevisionIndex = initialRevisionIndex + 1
     }
 
     const initialRevision = initialRevisionIndex === undefined
@@ -141,9 +164,9 @@ export class DatabaseMigrationService<Client> implements IDatabaseMigrationServi
       : revisions[initialRevisionIndex]
 
     let finalRevisionIndex
-    for (; nextRevisionIndex < revisions.length; nextRevisionIndex++) {
-      const pendingRevision = revisions[nextRevisionIndex]
-      // Unpack all required functions to guarantee that downgrade is possible later
+    while (nextPendingRevisionIndex < revisions.length) {
+      const pendingRevision = revisions[nextPendingRevisionIndex]
+      // Unpack all required functions to guarantee downgrade is possible later
 
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { up, down } = require(pendingRevision.file)
@@ -157,7 +180,8 @@ export class DatabaseMigrationService<Client> implements IDatabaseMigrationServi
       this.logger.info('Applying revision', { revision: pendingRevision })
       await up(client)
 
-      finalRevisionIndex = nextRevisionIndex
+      finalRevisionIndex = nextPendingRevisionIndex
+      nextPendingRevisionIndex++
     }
     let finalRevision
     if (finalRevisionIndex === undefined) {
@@ -177,14 +201,15 @@ export class DatabaseMigrationService<Client> implements IDatabaseMigrationServi
     namespace: string,
     revisionDirectory: string
   ): Promise<{ initialRevision?: IRevision, finalRevision?: IRevision }> {
-    // Downgrade from current version - version will only change by a single revision
+    // Downgrade from current version - revert only one revision
 
     this.logger.info('Downgrade database', { namespace, revisionDirectory })
 
     const revisions = this.computeRevisions(revisionDirectory)
 
     let initialRevisionIndex
-    const initialRevisionVersion = await this.fetchCurrentVersion(client, namespace)
+    const initialRevisionVersion =
+      await this.fetchCurrentVersion(client, namespace)
 
     // Determine index of the last revision
     if (initialRevisionVersion === undefined) {
@@ -199,14 +224,20 @@ export class DatabaseMigrationService<Client> implements IDatabaseMigrationServi
       )
       if (initialRevisionIndex < 0) {
         // Cannot determine initial head index of revisions
-        // Either the database version has corrupted, or the files have been retro-actively modified
-        throw new MigrationServiceError('cannot resolve downgrade path - could not find initial revision')
+        // Either the database version has corrupted,
+        // or the files have been retro-actively modified
+        throw new MigrationServiceError(
+          'cannot resolve downgrade path - could not find initial revision'
+        )
       }
     }
 
     const initialRevision = revisions[initialRevisionIndex]
 
-    this.logger.debug('Downgrade database - downgrading from revision', { initialRevision })
+    this.logger.debug(
+      'Downgrade database - downgrading from revision',
+      { initialRevision }
+    )
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { down } = require(initialRevision.file)
@@ -221,7 +252,9 @@ export class DatabaseMigrationService<Client> implements IDatabaseMigrationServi
         (revision) => revision.version === initialRevision.previousVersion
       )
       if (finalRevisionIndex < 0) {
-        throw new MigrationServiceError('cannot resolve downgrade path - could not find final revision')
+        throw new MigrationServiceError(
+          'cannot resolve downgrade path - could not find final revision'
+        )
       }
       finalRevision = revisions[finalRevisionIndex]
       await this.dao.setCurrentRevision(client, namespace, finalRevision)

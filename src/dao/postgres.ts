@@ -1,6 +1,10 @@
 import { Client } from '../client/postgres'
 import { getLogger, ILogger } from '../lib/logger'
-import { IPersistenceFacade, IRevision, MigrationServiceError } from '../service'
+import {
+  IPersistenceFacade,
+  IRevision,
+  MigrationServiceError
+} from '../service'
 
 export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
   private readonly logger
@@ -36,7 +40,8 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
         ${this.getNamespaceColumnName()} TEXT UNIQUE NOT NULL,
         ${this.getVersionColumnName()} TEXT NOT NULL,
         ${this.getFileColumnName()} TEXT NOT NULL,
-        ${this.getCreatedAtColumnName()} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ${this.getCreatedAtColumnName()}
+          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
     `)
   }
@@ -64,7 +69,10 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
       FROM ${this.getTableName()}
       WHERE ${this.getNamespaceColumnName()} = $1
     `
-    this.logger.debug('Get PostgreSQL revision - query statement', { statement })
+    this.logger.debug(
+      'Get PostgreSQL revision - query statement',
+      { statement }
+    )
     const result = await client.query(statement, [namespace])
     switch (result.rowCount) {
       case 0: {
@@ -77,12 +85,16 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
           file: result.rows[0][this.getFileColumnName()],
           createdAt: result.rows[0][this.getCreatedAtColumnName()]
         }
-        this.logger.info('Get PostgreSQL revision - revision found', { revision })
+        this.logger.info(
+          'Get PostgreSQL revision - revision found',
+          { revision }
+        )
         return revision
       }
       default: {
         throw new MigrationServiceError(
-          'PostgreSQL migration service found multiple revisions with the same namespace'
+          'PostgreSQL migration service found multiple revisions with the ' +
+          'same namespace'
         )
       }
     }
@@ -101,7 +113,10 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
         ${this.getFileColumnName()} = '${revision.file}'
       WHERE ${this.getNamespaceColumnName()} = '${namespace}'
     `
-    this.logger.debug('Set PostgreSQL revision - query update statement', { updateStatement })
+    this.logger.debug(
+      'Set PostgreSQL revision - query update statement',
+      { updateStatement }
+    )
     await client.query(updateStatement)
     const insertStatement = `
       INSERT INTO ${this.getTableName()} (
@@ -115,7 +130,10 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
       )
       ON CONFLICT (${this.getNamespaceColumnName()}) DO NOTHING
     `
-    this.logger.debug('Set PostgreSQL revision - query insert statement', { insertStatement })
+    this.logger.debug(
+      'Set PostgreSQL revision - query insert statement',
+      { insertStatement }
+    )
     await client.query(insertStatement)
   }
 

@@ -8,7 +8,8 @@ export interface Client {
   session: ClientSession
 }
 
-export class MongoDBConnectionManager implements IDatabaseConnectionManager<Client> {
+export class MongoDBConnectionManager
+implements IDatabaseConnectionManager<Client> {
   private readonly connection: Connection
 
   private readonly logger: ILogger

@@ -12,12 +12,16 @@ import { IDatabaseConnectionManager } from '../service'
 
 export type Client = PoolClient
 
-export class PostgreSQLConnectionManager implements IDatabaseConnectionManager<Client> {
+export class PostgreSQLConnectionManager
+implements IDatabaseConnectionManager<Client> {
   private readonly pool: Pool
 
   private readonly logger: ILogger
 
-  constructor (pool: Pool, options?: { config?: PoolConfig, logger?: ILogger }) {
+  constructor (
+    pool: Pool,
+    options?: { config?: PoolConfig, logger?: ILogger }
+  ) {
     this.pool = pool
     this.logger = options?.logger ?? getLogger(PostgreSQLConnectionManager.name)
   }

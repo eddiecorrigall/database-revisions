@@ -7,7 +7,10 @@ export enum HashAlgorithm {
   MD5 = 'md5',
 }
 
-export const hash = (content: string | NodeJS.ArrayBufferView, algorithm?: HashAlgorithm): string => {
+export const hash = (
+  content: string | NodeJS.ArrayBufferView,
+  algorithm?: HashAlgorithm
+): string => {
   const hash = createHash(algorithm ?? HashAlgorithm.SHA256)
   hash.update(content)
   return hash.digest('hex')

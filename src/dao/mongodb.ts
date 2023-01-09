@@ -1,9 +1,13 @@
 import { assert } from 'console'
-import { Connection, DefaultSchemaOptions, Model, Schema } from 'mongoose'
+import { Connection, Model, Schema } from 'mongoose'
 
 import { Client } from '../client/mongodb'
 import { getLogger, ILogger } from '../lib/logger'
-import { IPersistenceFacade, IRevision, MigrationServiceError } from '../service'
+import {
+  IPersistenceFacade,
+  IRevision,
+  MigrationServiceError
+} from '../service'
 
 export const COLLECTION_NAME = 'migrations'
 
@@ -34,7 +38,12 @@ export const MigrationsDefinition = {
 
 export const MigrationsSchema = new Schema(MigrationsDefinition)
 
-export type MigrationsModel = Model<{ namespace: string, version: string, file: string, createdAt: Date }, {}, {}, {}, Schema<any, Model<any, any, any, any, any>, {}, {}, {}, {}, DefaultSchemaOptions, { namespace: string, version: string, file: string, createdAt: Date }>>
+export type MigrationsModel = Model<{
+  namespace: string
+  version: string
+  file: string
+  createdAt: Date
+}>
 
 export class MongoDBPersistence implements IPersistenceFacade<Client> {
   private readonly logger
@@ -76,7 +85,8 @@ export class MongoDBPersistence implements IPersistenceFacade<Client> {
   public async acquireExclusiveLock (
     client: Client
   ): Promise<void> {
-    // TODO: locking a collection is possible, but not currently an available MongoDB feature
+    // TODO: locking a collection is possible,
+    // but not currently an available MongoDB feature
     this.logger.info('Locking MongoDB collection (no-op)')
   }
 
@@ -93,7 +103,8 @@ export class MongoDBPersistence implements IPersistenceFacade<Client> {
   ): Promise<IRevision | undefined> {
     this.logger.info('Get MongoDB revision', { namespace })
     const MigrationsModel = this.createMigrationsModel(client.connection)
-    const documents = await MigrationsModel.find().limit(1).lean().session(client.session)
+    const documents = await MigrationsModel
+      .find().limit(1).lean().session(client.session)
     switch (documents.length) {
       case 0: {
         this.logger.info('Get MongoDB revision - no revision found')
@@ -105,12 +116,16 @@ export class MongoDBPersistence implements IPersistenceFacade<Client> {
           file: documents[0].file,
           createdAt: documents[0].createdAt
         }
-        this.logger.info('Get PostgreSQL revision - revision found', { revision })
+        this.logger.info(
+          'Get PostgreSQL revision - revision found',
+          { revision }
+        )
         return revision
       }
       default: {
         throw new MigrationServiceError(
-          'MongoDB migration service found multiple revisions with the same namespace'
+          'MongoDB migration service found multiple revisions with the ' +
+          'same namespace'
         )
       }
     }

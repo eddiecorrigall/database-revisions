@@ -7,7 +7,11 @@ import { MongoDBConnectionManager } from './client/mongodb'
 import { PostgreSQLConnectionManager } from './client/postgres'
 import { MongoDBPersistence } from './dao/mongodb'
 import { PostgreSQLPersistence } from './dao/postgres'
-import { DatabaseMigrationService, IDatabaseConnectionManager, IPersistenceFacade } from './service'
+import {
+  DatabaseMigrationService,
+  IDatabaseConnectionManager,
+  IPersistenceFacade
+} from './service'
 
 // eg. your-app-name
 const MIGRATE_NAMESPACE = expectEnv('MIGRATE_NAMESPACE')
@@ -50,7 +54,10 @@ const _fetchCurrentVersion = async (): Promise<string | undefined> => {
   let version
   await db.transaction(async (client: unknown) => {
     await dao.initialize(client)
-    version = await migrationService.fetchCurrentVersion(client, MIGRATE_NAMESPACE)
+    version = await migrationService.fetchCurrentVersion(
+      client,
+      MIGRATE_NAMESPACE
+    )
   })
   return version
 }
@@ -67,7 +74,9 @@ const fetchCurrentVersion = async (): Promise<void> => {
 const listRevisions = async (): Promise<void> => {
   const revisions = migrationService.computeRevisions(MIGRATE_DIRECTORY)
   const currentVersion = await _fetchCurrentVersion()
-  const currentVersionIndex = revisions.findIndex((revision) => revision.version === currentVersion)
+  const currentVersionIndex = revisions.findIndex(
+    (revision) => revision.version === currentVersion
+  )
   for (let index = 0; index < revisions.length; index++) {
     const revision = revisions[index]
     const displayPreviousVersion = revision.previousVersion ?? '(base)'
@@ -98,7 +107,8 @@ const upgrade = async (): Promise<void> => {
     const {
       initialRevision,
       finalRevision
-    } = await migrationService.upgrade(client, MIGRATE_NAMESPACE, MIGRATE_DIRECTORY)
+    } = await migrationService.upgrade(
+      client, MIGRATE_NAMESPACE, MIGRATE_DIRECTORY)
     if (finalRevision === undefined) {
       console.log('nothing to upgrade')
     } else {
@@ -106,8 +116,14 @@ const upgrade = async (): Promise<void> => {
         console.log(`version: (base) -> ${finalRevision.version}`)
         console.log(`file:    (base) -> ${basename(finalRevision.file)}`)
       } else {
-        console.log(`version: ${initialRevision.version} -> ${finalRevision.version}`)
-        console.log(`file:    ${basename(initialRevision.file)} -> ${basename(finalRevision.file)}`)
+        console.log(
+          'version: ' +
+          `${initialRevision.version} -> ${finalRevision.version}`
+        )
+        console.log(
+          'file:    ' +
+          `${basename(initialRevision.file)} -> ${basename(finalRevision.file)}`
+        )
       }
     }
     // Unlock resource
@@ -126,7 +142,8 @@ const downgrade = async (): Promise<void> => {
     const {
       initialRevision,
       finalRevision
-    } = await migrationService.downgrade(client, MIGRATE_NAMESPACE, MIGRATE_DIRECTORY)
+    } = await migrationService.downgrade(
+      client, MIGRATE_NAMESPACE, MIGRATE_DIRECTORY)
     if (finalRevision === undefined) {
       if (initialRevision === undefined) {
         console.log('nothing to downgrade')
@@ -138,8 +155,14 @@ const downgrade = async (): Promise<void> => {
       if (initialRevision === undefined) {
         throw new Error('this should not be possible')
       } else {
-        console.log(`version: ${initialRevision.version} -> ${finalRevision.version}`)
-        console.log(`file:    ${basename(initialRevision.file)} -> ${basename(finalRevision.file)}`)
+        console.log(
+          'version: ' +
+          `${initialRevision.version} -> ${finalRevision.version}`
+        )
+        console.log(
+          'file:    ' +
+          `${basename(initialRevision.file)} -> ${basename(finalRevision.file)}`
+        )
       }
     }
     // Unlock resource
@@ -151,9 +174,18 @@ const downgrade = async (): Promise<void> => {
 const printUsage = async (): Promise<void> => {
   console.log('Usage: migrate [up|down|version|help]')
   console.log('Environment variables:')
-  console.log('  MIGRATE_NAMESPACE - namespace for managing more than one version')
-  console.log('  MIGRATE_DIRECTORY - path to revisions directory containing revisions files')
-  console.log('  MIGRATE_CLIENT    - database client type (eg. postgresql, mongodb, etc)')
+  console.log(
+    '  MIGRATE_NAMESPACE ' +
+    '- namespace for managing more than one version'
+  )
+  console.log(
+    '  MIGRATE_DIRECTORY ' +
+    '- path to revisions directory containing revisions files'
+  )
+  console.log(
+    '  MIGRATE_CLIENT    ' +
+    '- database client type (eg. postgresql, mongodb, etc)'
+  )
 }
 
 const args = process.argv.slice(2)
