@@ -1,0 +1,21 @@
+FROM postgres:13-alpine
+
+WORKDIR /etc/test
+
+RUN apk add --update nodejs npm
+RUN npm install --global bunyan
+
+COPY package.json .
+COPY package-lock.json .
+# COPY tsconfig.json .
+# COPY src src
+COPY build build
+COPY node_modules node_modules
+COPY revisions-postgresql revisions
+
+# RUN npm ci
+# RUN npm run build
+
+# Copy and rename files to order their run order
+COPY docker/postgresql/migrate.sh /docker-entrypoint-initdb.d/000_migrate.sh
+COPY docker/postgresql/seed.sql /docker-entrypoint-initdb.d/001_seed.sql

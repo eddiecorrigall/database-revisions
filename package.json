@@ -1,0 +1,24 @@
+{
+  "name": "node-revisions",
+  "version": "0.0.1",
+  "description": "Universal Database Migration Tool",
+  "main": "build/cli.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "preinstall": "npm audit --audit-level moderate > /dev/null",
+    "clean": "rm -fr ./build",
+    "build": "npx tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/bunyan": "^1.8.8",
+    "@types/pg": "^8.6.6",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "bunyan": "^1.8.15",
+    "mongoose": "^6.8.2",
+    "pg": "^8.8.0"
+  }
+}
