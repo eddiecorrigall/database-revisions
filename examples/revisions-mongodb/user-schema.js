@@ -1,22 +1,22 @@
-const { Schema } = require('mongoose');
+const { Schema } = require('mongoose')
 
 const UserSchema = new Schema({
   firstName: {
     type: Schema.Types.String,
-    required: true,
+    required: true
   },
   lastName: {
     type: Schema.Types.String,
-    required: true,
+    required: true
   },
   email: {
     type: Schema.Types.String,
-    required: false,
-  },
-});
+    required: false
+  }
+})
 
 const createUserModel = (connection) => {
-  return connection.model('users', UserSchema);
-};
+  return connection.model('users', UserSchema)
+}
 
-module.exports = { UserSchema, createUserModel };
+module.exports = { UserSchema, createUserModel }

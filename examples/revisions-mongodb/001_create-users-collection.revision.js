@@ -1,22 +1,22 @@
-const { createUserModel } = require('./user-schema');
+const { createUserModel } = require('./user-schema')
 
 const up = async (client) => {
-  const UserModel = createUserModel(client.connection);
+  const UserModel = createUserModel(client.connection)
   await UserModel.create([
     {
       firstName: 'Bob',
-      lastName: 'Marley',
+      lastName: 'Marley'
     },
     {
       firstName: 'Alice',
-      lastName: 'Cooper',
+      lastName: 'Cooper'
     }
-  ], { session: client.session });
-};
+  ], { session: client.session })
+}
 
 const down = async (client) => {
-  const UserModel = createUserModel(client.connection);
-  await UserModel.deleteMany({}).session(client.session);
-};
+  const UserModel = createUserModel(client.connection)
+  await UserModel.deleteMany({}).session(client.session)
+}
 
-module.exports = { up, down };
+module.exports = { up, down }
