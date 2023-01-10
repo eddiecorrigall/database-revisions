@@ -16,4 +16,4 @@ export MIGRATE_DIRECTORY="$DIR/../demo/revisions-postgresql"
 
 docker compose up --detach postgresql
 
-node . $@
+node . "$@"

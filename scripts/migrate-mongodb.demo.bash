@@ -12,4 +12,4 @@ export MIGRATE_DIRECTORY="$DIR/../demo/revisions-mongodb"
 
 docker compose up --detach mongodb
 
-node . $@
+node . "$@"
