@@ -71,6 +71,14 @@ const fetchCurrentVersion = async (): Promise<void> => {
   }
 }
 
+const newRevision = async (description: string): Promise<void> => {
+  const revisionFile = await migrationService.newRevision(
+    MIGRATE_DIRECTORY,
+    description
+  )
+  console.log(`file: ${revisionFile}`)
+}
+
 const listRevisions = async (): Promise<void> => {
   const revisions = migrationService.computeRevisions(MIGRATE_DIRECTORY)
   const currentVersion = await _fetchCurrentVersion()
@@ -211,6 +219,17 @@ const command = args[0].toLowerCase()
 
 switch (command) {
   case 'version': fetchCurrentVersion().then(onSuccess, onFailure); break
+  case 'new': {
+    const description = process.argv[3]
+    if (description === undefined) {
+      void printUsage().then(() => {
+        onFailure('missing description')
+      })
+    } else {
+      newRevision(description).then(onSuccess, onFailure)
+    }
+    break
+  }
   case 'list': listRevisions().then(onSuccess, onFailure); break
   case 'up': upgrade().then(onSuccess, onFailure); break
   case 'down': downgrade().then(onSuccess, onFailure); break

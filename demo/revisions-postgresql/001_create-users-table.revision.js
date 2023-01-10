@@ -1,3 +1,5 @@
+const previousVersion = undefined
+
 const up = async (client) => {
   await client.query(`
     CREATE TABLE IF NOT EXISTS users (
@@ -20,4 +22,4 @@ const down = async (client) => {
   `)
 }
 
-module.exports = { up, down }
+module.exports = { previousVersion, up, down }

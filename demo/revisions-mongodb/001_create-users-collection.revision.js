@@ -1,5 +1,7 @@
 const { createUserModel } = require('./user-schema')
 
+const previousVersion = undefined
+
 const up = async (client) => {
   const UserModel = createUserModel(client.connection)
   await UserModel.create([
@@ -19,4 +21,4 @@ const down = async (client) => {
   await UserModel.deleteMany({}).session(client.session)
 }
 
-module.exports = { up, down }
+module.exports = { previousVersion, up, down }

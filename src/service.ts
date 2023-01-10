@@ -1,4 +1,4 @@
-import { readdirSync } from 'fs'
+import { readdirSync, writeFileSync } from 'fs'
 import { join as pathJoin } from 'path'
 
 import { hash, hashFile } from './lib/hash'
@@ -53,6 +53,10 @@ export interface IDatabaseMigrationService<Client> {
     client: Client,
     namespace: string
   ) => Promise<string | undefined>
+  newRevision: (
+    revisionDirectory: string,
+    description: string
+  ) => Promise<string>
   computeRevisions: (revisionDirectory: string) => IRevision[]
   upgrade: (
     client: Client,
@@ -65,6 +69,26 @@ export interface IDatabaseMigrationService<Client> {
     revisionDirectory: string
   ) => Promise<{ initialRevision?: IRevision, finalRevision?: IRevision }>
 }
+
+export const getRevisionFileName = (description: string): string => {
+  const timestamp = Date.now()
+  const label = description
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '-')
+    .substring(0, 50)
+  return `${timestamp}_${label}.revision.js`
+}
+
+export const getRevisionFileContent = (
+  previousVersion: string | undefined
+): string => (
+  previousVersion === undefined
+    ? 'const previousVersion = undefined\n'
+    : `const previousVersion = '${previousVersion}'\n` +
+  'const up = async (client) => {}\n' +
+  'const down = async (client) => {}\n' +
+  'module.exports = { previousVersion, up, down }\n'
+)
 
 export class DatabaseMigrationService<Client>
 implements IDatabaseMigrationService<Client> {
@@ -113,6 +137,24 @@ implements IDatabaseMigrationService<Client> {
     }
     this.logger.debug('Compute revisions', { revisions })
     return revisions
+  }
+
+  public async newRevision (
+    revisionDirectory: string,
+    description: string
+  ): Promise<string> {
+    const revisions = await this.computeRevisions(revisionDirectory)
+    const latestRevision = revisions[revisions.length - 1]
+
+    const filePath = pathJoin(
+      revisionDirectory,
+      getRevisionFileName(description)
+    )
+    const fileContent = getRevisionFileContent(latestRevision.version)
+
+    writeFileSync(filePath, fileContent)
+
+    return filePath
   }
 
   public async upgrade (
