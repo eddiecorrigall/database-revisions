@@ -13,7 +13,7 @@
     "preinstall": "npm audit --audit-level moderate > /dev/null",
     "clean": "rm -fr ./build",
     "lint": "npx eslint src",
-    "build": "npx tsc"
+    "build": "npx tsc --project ./tsconfig.build.json"
   },
   "author": "",
   "license": "ISC",
