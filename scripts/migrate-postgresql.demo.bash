@@ -14,6 +14,4 @@ export MIGRATE_NAMESPACE=test
 export MIGRATE_CLIENT=postgresql
 export MIGRATE_DIRECTORY="$DIR/../demo/revisions-postgresql"
 
-docker compose up --detach postgresql
-
 node . "$@"

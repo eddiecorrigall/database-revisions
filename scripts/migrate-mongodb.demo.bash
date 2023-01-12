@@ -10,6 +10,4 @@ export MIGRATE_NAMESPACE=test
 export MIGRATE_CLIENT=mongodb
 export MIGRATE_DIRECTORY="$DIR/../demo/revisions-mongodb"
 
-docker compose up --detach mongodb
-
 node . "$@"
