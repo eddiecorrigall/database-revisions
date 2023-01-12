@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 export DIR="$(pwd)/$(dirname -- "${BASH_SOURCE[0]}")"
 
