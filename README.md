@@ -3,6 +3,8 @@ Node Revisions
 
 [![Build Status](https://github.com/eddiecorrigall/node-revisions/actions/workflows/main.yml/badge.svg)](https://github.com/eddiecorrigall/node-revisions/actions/workflows/main.yml)
 
+Node Revisions is a lightweight database migration tool for usage with no-SQL and SQL databases such as MongoDB and PostgreSQL, written in JavaScript.
+
 | Command             | Description                                  |
 | ------------------- | -------------------------------------------- |
 | `new [description]` | create a new revision                        |
