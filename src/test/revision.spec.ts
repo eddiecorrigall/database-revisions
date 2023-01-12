@@ -1,9 +1,11 @@
 import assert from 'assert'
 
 import {
+  computeVersion,
   fileFilter,
   generateFileName,
   IRevision,
+  IRevisionModule,
   resolveUpgradePath,
   verifyRevisionModule
 } from '../../src/revision'
@@ -15,38 +17,41 @@ const firstRevision: IRevision = {
   version: firstRevisionFileHash,
   file: 'bbb.revision.js' // second lexicographically, but first revision
 }
-const firstRevisionModule = {
+const firstRevisionModule: IRevisionModule = {
   previousVersion: firstRevision.previousVersion,
   up: (client: unknown) => {},
   down: (client: unknown) => {},
+  version: firstRevision.version,
   file: firstRevision.file,
   fileHash: firstRevisionFileHash
 }
 
 const secondRevisionFileHash = 'hash2'
-const secondRevision = {
+const secondRevision: IRevision = {
   previousVersion: firstRevision.version,
   version: hash(secondRevisionFileHash + firstRevision.version),
   file: 'aaa.revisions.js' // first lexicographically, but second revision
 }
-const secondRevisionModule = {
+const secondRevisionModule: IRevisionModule = {
   previousVersion: secondRevision.previousVersion,
   up: (client: unknown) => {},
   down: (client: unknown) => {},
+  version: secondRevision.version,
   file: secondRevision.file,
   fileHash: secondRevisionFileHash
 }
 
 const thirdRevisionFileHash = 'hash3'
-const thirdRevision = {
+const thirdRevision: IRevision = {
   previousVersion: secondRevision.version,
   version: hash(thirdRevisionFileHash + secondRevision.version),
   file: 'ccc.revisions.js' // third lexicographically, and third revision
 }
-const thirdRevisionModule = {
+const thirdRevisionModule: IRevisionModule = {
   previousVersion: thirdRevision.previousVersion,
   up: (client: unknown) => {},
   down: (client: unknown) => {},
+  version: thirdRevision.version,
   file: thirdRevision.file,
   fileHash: thirdRevisionFileHash
 }
@@ -94,10 +99,10 @@ describe('resolveUpgradePath', () => {
         resolveUpgradePath(validUnorderedRevisionModules, undefined),
         {
           initialRevision: undefined,
-          pendingRevisions: [
-            firstRevision,
-            secondRevision,
-            thirdRevision
+          pendingRevisionModules: [
+            firstRevisionModule,
+            secondRevisionModule,
+            thirdRevisionModule
           ]
         }
       )
@@ -119,7 +124,7 @@ describe('resolveUpgradePath', () => {
           ),
           {
             initialRevision: secondRevision,
-            pendingRevisions: [thirdRevision]
+            pendingRevisionModules: [thirdRevisionModule]
           }
         )
       })
@@ -133,7 +138,7 @@ describe('resolveUpgradePath', () => {
           ),
           {
             initialRevision: thirdRevision,
-            pendingRevisions: []
+            pendingRevisionModules: []
           }
         )
       })
@@ -172,6 +177,7 @@ describe('verifyRevisionModule', () => {
               previousVersion: firstRevision.previousVersion,
               up: () => {},
               down: () => {},
+              version: firstRevision.version,
               file: firstRevision.file,
               fileHash: firstRevision.version
             }
@@ -179,17 +185,19 @@ describe('verifyRevisionModule', () => {
         })
       })
     })
-    describe('when file hash does not match version', () => {
+    describe('when file hash is bad', () => {
       it('should throw error', () => {
         assert.throws(() => {
+          const badFileHash = 'bad hash'
           verifyRevisionModule(
             firstRevision,
             {
               previousVersion: firstRevision.previousVersion,
               up: () => {},
               down: () => {},
+              version: badFileHash,
               file: firstRevision.file,
-              fileHash: 'something that does not match the revision version'
+              fileHash: badFileHash
             }
           )
         })
@@ -206,6 +214,7 @@ describe('verifyRevisionModule', () => {
               previousVersion: firstRevision.version,
               up: () => {},
               down: () => {},
+              version: secondRevision.version,
               file: secondRevision.file,
               fileHash: secondRevisionFileHash
             }
@@ -213,17 +222,19 @@ describe('verifyRevisionModule', () => {
         })
       })
     })
-    describe('when file hash is incorrect', () => {
+    describe('when file hash is bad', () => {
       it('should throw error', () => {
         assert.throws(() => {
+          const badFileHash = 'bad hash'
           verifyRevisionModule(
             secondRevision,
             {
               previousVersion: firstRevision.version,
               up: () => {},
               down: () => {},
+              version: computeVersion(firstRevision.version, badFileHash),
               file: secondRevision.file,
-              fileHash: 'bad hash'
+              fileHash: badFileHash
             }
           )
         })
@@ -233,14 +244,12 @@ describe('verifyRevisionModule', () => {
       it('should throw error', () => {
         assert.throws(() => {
           verifyRevisionModule(
-            {
-              ...secondRevision,
-              previousVersion: thirdRevision.version
-            },
+            secondRevision,
             {
               previousVersion: firstRevision.version,
               up: () => {},
               down: () => {},
+              version: 'not the second version',
               file: secondRevision.file,
               fileHash: secondRevisionFileHash
             }

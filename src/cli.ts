@@ -126,24 +126,30 @@ const upgrade = async (): Promise<void> => {
     // Apply all pending revisions
     const {
       initialRevision,
-      pendingRevisions
+      pendingRevisionModules
     } = await migrationService.upgrade(
       client, MIGRATE_NAMESPACE, MIGRATE_DIRECTORY
     )
-    const finalRevision = pendingRevisions[pendingRevisions.length - 1]
-    if (pendingRevisions.length === 0) {
+    const finalRevisionModule = pendingRevisionModules[
+      pendingRevisionModules.length - 1
+    ]
+    if (pendingRevisionModules.length === 0) {
       console.log('nothing to upgrade')
     } else if (initialRevision === undefined) {
-      console.log(`version: (base) -> ${finalRevision.version}`)
-      console.log(`file:    (base) -> ${basename(finalRevision.file)}`)
+      console.log(`version: (base) -> ${finalRevisionModule.version}`)
+      console.log(`file:    (base) -> ${basename(finalRevisionModule.file)}`)
     } else {
       console.log(
         'version: ' +
-        `${initialRevision.version} -> ${finalRevision.version}`
+        initialRevision.version +
+        ' -> ' +
+        finalRevisionModule.version
       )
       console.log(
         'file:    ' +
-        `${basename(initialRevision.file)} -> ${basename(finalRevision.file)}`
+        basename(initialRevision.file) +
+        ' -> ' +
+        basename(finalRevisionModule.file)
       )
     }
     // Unlock resource
@@ -161,25 +167,29 @@ const downgrade = async (): Promise<void> => {
     // Revert current revision
     const {
       finalRevision,
-      pendingRevisions
+      pendingRevisionModules
     } = await migrationService.downgrade(
       client, MIGRATE_NAMESPACE, MIGRATE_DIRECTORY)
 
-    const initialRevision = pendingRevisions[0]
+    const initialRevisionModule = pendingRevisionModules[0]
 
-    if (pendingRevisions.length === 0) {
+    if (pendingRevisionModules.length === 0) {
       console.log('nothing to downgrade')
     } else if (finalRevision === undefined) {
-      console.log(`version: ${initialRevision.version} -> (base)`)
-      console.log(`file:    ${basename(initialRevision.file)} -> (base)`)
+      console.log(`version: ${initialRevisionModule.version} -> (base)`)
+      console.log(`file:    ${basename(initialRevisionModule.file)} -> (base)`)
     } else {
       console.log(
         'version: ' +
-        `${initialRevision.version} -> ${finalRevision.version}`
+        initialRevisionModule.version +
+        ' -> ' +
+        finalRevision.version
       )
       console.log(
         'file:    ' +
-        `${basename(initialRevision.file)} -> ${basename(finalRevision.file)}`
+        basename(initialRevisionModule.file) +
+        ' -> ' +
+        basename(finalRevision.file)
       )
     }
     // Unlock resource

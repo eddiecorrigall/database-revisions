@@ -2,6 +2,7 @@ import { readdirSync } from 'fs'
 import { join as pathJoin } from 'path'
 
 import { hash, hashFile } from './lib/hash'
+import { DowngradePath, UpgradePath } from './service'
 
 export interface IRevision {
   readonly file: string
@@ -16,6 +17,7 @@ export interface IRevisionModule {
   up: (client: unknown) => unknown
   down: (client: unknown) => unknown
   // transients...
+  version: string
   file: string
   fileHash: string
 }
@@ -63,12 +65,17 @@ export const loadFile = (file: string): IRevisionModule => {
   if (typeof down !== 'function') {
     throw new Error('revision file missing down function')
   }
+  const fileHash = hashFile(file)
   return {
-    file,
-    fileHash: hashFile(file),
-    previousVersion,
     up,
-    down
+    down,
+    previousVersion,
+    version: computeVersion(
+      previousVersion,
+      fileHash
+    ),
+    file,
+    fileHash
   }
 }
 
@@ -90,31 +97,28 @@ export const loadDirectory = (revisionDirectory: string): IRevisionModule[] => {
 
 export const verifyRevisionModule = (
   trustedRevision: IRevision,
-  revisionModule: IRevisionModule
+  untrustedRevisionModule: IRevisionModule
 ): IRevisionModule => {
   const hasValidPreviousVersion =
-    trustedRevision.previousVersion === revisionModule.previousVersion
+    trustedRevision.previousVersion === untrustedRevisionModule.previousVersion
   if (!hasValidPreviousVersion) {
     throw new Error(
       'previous version invalid - ' +
       `expected ${trustedRevision.previousVersion ?? 'undefined (base)'} ` +
-      `but got ${revisionModule.previousVersion ?? 'undefined (base)'}`
+      `but got ${untrustedRevisionModule.previousVersion ?? 'undefined (base)'}`
     )
   }
-  const untrustedVersion = computeVersion(
-    revisionModule.previousVersion,
-    revisionModule.fileHash
-  )
-  const hasValidVersion = trustedRevision.version === untrustedVersion
+  const hasValidVersion =
+    trustedRevision.version === untrustedRevisionModule.version
   if (!hasValidVersion) {
     throw new Error(
       'version mismatch - ' +
       `expected ${trustedRevision.version} ` +
-      `but got ${untrustedVersion} ` +
+      `but got ${untrustedRevisionModule.version} ` +
       `for file ${trustedRevision.file}`
     )
   }
-  return revisionModule
+  return untrustedRevisionModule
 }
 
 export const sortAndVerifyRevisionModules = (
@@ -142,10 +146,7 @@ export const sortAndVerifyRevisionModules = (
   while (true) {
     sortedRevisionModules.push(nextRevisionModule)
     nextRevisionModule = revisionModuleByPreviousVersion[
-      computeVersion(
-        nextRevisionModule.previousVersion,
-        nextRevisionModule.fileHash
-      )
+      nextRevisionModule.version
     ]
     if (nextRevisionModule === undefined) {
       break
@@ -163,10 +164,7 @@ export const sortAndVerifyRevisionModules = (
 export const resolveUpgradePath = (
   revisionModules: IRevisionModule[], // local file system (sorted and verified)
   currentRevision: IRevision | undefined // remote server (source of truth)
-): {
-  initialRevision: IRevision | undefined
-  pendingRevisions: IRevision[]
-} => {
+): UpgradePath => {
   /* scenarios:
    * - nothing to upgrade
    * - all revisions are pending
@@ -182,7 +180,7 @@ export const resolveUpgradePath = (
       // nothing to do
       return {
         initialRevision: undefined,
-        pendingRevisions: []
+        pendingRevisionModules: []
       }
     }
     nextRevisionModuleIndex = 0
@@ -204,25 +202,22 @@ export const resolveUpgradePath = (
       // nothing to do
       return {
         initialRevision: currentRevision,
-        pendingRevisions: []
+        pendingRevisionModules: []
       }
     }
   }
   return {
     initialRevision: currentRevision,
-    pendingRevisions: sortedRevisionModules.slice(
+    pendingRevisionModules: sortedRevisionModules.slice(
       nextRevisionModuleIndex
-    ).map(revisionModuleAsRevision)
+    )
   }
 }
 
 export const resolveDowngradePath = (
-  revisions: IRevision[],
+  revisionModules: IRevisionModule[],
   currentRevision: IRevision | undefined
-): {
-  finalRevision: IRevision | undefined // used to set version
-  pendingRevisions: IRevision[] // used to invoke down
-} => {
+): DowngradePath => {
   /* scenarios:
    * - nothing to downgrade
    * - has no previous version / previous version is base
@@ -232,32 +227,34 @@ export const resolveDowngradePath = (
     // nothing to downgrade
     return {
       finalRevision: undefined,
-      pendingRevisions: []
+      pendingRevisionModules: []
     }
   }
-  verifyRevisionModule(currentRevision, loadFile(currentRevision.file))
-  if (currentRevision.previousVersion === undefined) {
+  const currentRevisionModule = revisionModules.find(
+    (revisionModule) => revisionModule.file === currentRevision.file
+  )
+  if (currentRevisionModule === undefined) {
+    throw new Error('current revision module not found')
+  }
+  verifyRevisionModule(currentRevision, currentRevisionModule)
+  if (currentRevisionModule.previousVersion === undefined) {
     // first revision after base
     return {
       finalRevision: undefined,
-      pendingRevisions: [currentRevision]
+      pendingRevisionModules: [currentRevisionModule]
     }
   }
-  // check for valid revision dependency (previous version)
-  const previousAppliedRevision = revisions.find(
-    (revision) => revision.version === currentRevision.previousVersion
+  const previousAppliedRevisionModule = revisionModules.find(
+    (revisionModule) =>
+      revisionModule.version === currentRevisionModule.previousVersion
   )
-  if (previousAppliedRevision === undefined) {
+  if (previousAppliedRevisionModule === undefined) {
     // should have a previous version
     throw new Error('no upgrade path - missing revision dependency')
   }
-  verifyRevisionModule(
-    previousAppliedRevision,
-    loadFile(previousAppliedRevision.file)
-  )
   return {
-    finalRevision: previousAppliedRevision,
-    pendingRevisions: [currentRevision]
+    finalRevision: revisionModuleAsRevision(previousAppliedRevisionModule),
+    pendingRevisionModules: [currentRevisionModule]
   }
 }
 

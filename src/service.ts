@@ -1,16 +1,15 @@
 import { writeFileSync } from 'fs'
 import { join as pathJoin } from 'path'
-import { mapBy } from './lib/map'
 
 import { getLogger, ILogger } from './lib/logger'
 import {
   generateFileContent,
   generateFileName,
   IRevision,
+  IRevisionModule,
   loadDirectory,
   resolveDowngradePath,
-  resolveUpgradePath,
-  revisionModuleAsRevision
+  resolveUpgradePath
 } from './revision'
 
 export class MigrationServiceError extends Error {}
@@ -52,12 +51,12 @@ export interface IPersistenceFacade<Client> {
 
 export interface UpgradePath {
   initialRevision: IRevision | undefined
-  pendingRevisions: IRevision[]
+  pendingRevisionModules: IRevisionModule[]
 }
 
 export interface DowngradePath {
   finalRevision: IRevision | undefined
-  pendingRevisions: IRevision[]
+  pendingRevisionModules: IRevisionModule[]
 }
 
 export interface IDatabaseMigrationService<Client> {
@@ -107,10 +106,12 @@ implements IDatabaseMigrationService<Client> {
     let latestVersion
     if (untrustedRevisionModules.length > 0) {
       const {
-        pendingRevisions
+        pendingRevisionModules
       } = resolveUpgradePath(untrustedRevisionModules, undefined)
-      const latestRevision = pendingRevisions[pendingRevisions.length - 1]
-      latestVersion = latestRevision.version
+      const latestRevisionModule = pendingRevisionModules[
+        pendingRevisionModules.length - 1
+      ]
+      latestVersion = latestRevisionModule.version
     }
 
     const filePath = pathJoin(
@@ -143,30 +144,28 @@ implements IDatabaseMigrationService<Client> {
     this.logger.info('Upgrade database', { namespace, revisionDirectory })
 
     const revisionModules = loadDirectory(revisionDirectory)
-
     const currentRevision = await this.fetchCurrentRevision(client, namespace)
     const upgradePath = resolveUpgradePath(revisionModules, currentRevision)
 
-    const { pendingRevisions } = upgradePath
-    if (pendingRevisions.length === 0) {
+    const { pendingRevisionModules } = upgradePath
+    if (pendingRevisionModules.length === 0) {
       this.logger.info('No pending revisions')
       return upgradePath
     }
 
-    const revisionModulesByFile = mapBy(revisionModules, ({ file }) => file)
-
-    for (const pendingRevision of pendingRevisions) {
-      this.logger.info('Applying revision', { revision: pendingRevision })
-      const pendingRevisionModule = revisionModulesByFile[pendingRevision.file]
-      if (pendingRevisionModule === undefined) {
-        throw new Error('cannot find associated pending revision module')
-      }
+    for (const pendingRevisionModule of pendingRevisionModules) {
+      this.logger.info(
+        'Applying revision',
+        { revisionModule: pendingRevisionModule }
+      )
       const { up } = pendingRevisionModule
       await up(client)
     }
 
-    if (pendingRevisions.length > 0) {
-      const finalRevision = pendingRevisions[pendingRevisions.length - 1]
+    if (pendingRevisionModules.length > 0) {
+      const finalRevision = pendingRevisionModules[
+        pendingRevisionModules.length - 1
+      ]
       await this.dao.setCurrentRevision(client, namespace, finalRevision)
     }
 
@@ -183,19 +182,15 @@ implements IDatabaseMigrationService<Client> {
     this.logger.info('Downgrade database', { namespace, revisionDirectory })
 
     const revisionModules = loadDirectory(revisionDirectory)
-    const revisions = revisionModules.map(revisionModuleAsRevision)
-
     const currentRevision = await this.fetchCurrentRevision(client, namespace)
-    const downgradePath = resolveDowngradePath(revisions, currentRevision)
+    const downgradePath = resolveDowngradePath(revisionModules, currentRevision)
 
-    const { finalRevision, pendingRevisions } = downgradePath
-    if (pendingRevisions.length === 0) {
+    const { finalRevision, pendingRevisionModules } = downgradePath
+    if (pendingRevisionModules.length === 0) {
       this.logger.debug('Nothing to downgrade')
       return downgradePath
     }
-    const pendingRevisionModule = revisionModules.find(
-      (revisionModule) => revisionModule.file === pendingRevisions[0].file
-    )
+    const pendingRevisionModule = pendingRevisionModules[0]
     if (pendingRevisionModule === undefined) {
       throw new Error('cannot find associated initial revision module')
     }
