@@ -5,11 +5,12 @@ services:
     ports:
       - '5432:5432'
     environment:
+      PGUSER: postgres
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: postgres
     healthcheck:
-      test: pg_isready -U postgres
+      test: pg_isready
       start_period: 10s
       interval: 10s
       timeout: 5s
