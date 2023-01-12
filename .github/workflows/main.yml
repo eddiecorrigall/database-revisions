@@ -1,0 +1,37 @@
+name: Build Artifact
+on:
+  push:
+    branches: [master]
+permissions:
+  contents: read  # required for checkout action
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.18.1'
+          cache: 'yarn'
+      - name: Install NodeJS Dependencies
+        run: npm install
+      - name: Run Lint
+        run: npm run lint
+      - name: Run Unit Tests
+        run: npm test
+      - name: Run build
+        run: npm run build
+      - name: Remove Non-Production Dependencies
+        run: npm install --omit=dev
+      - name: Save Artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifact
+          path: |
+            build
+            node_modules
+            package.json
+            package-lock.json
+          retention-days: 3
