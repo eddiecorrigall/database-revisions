@@ -1,7 +1,6 @@
 const { createUserModel } = require('./user-schema')
 
-const previousVersion =
-  '6f374fc7f25221ff9fafac6b1579a6ac5b99881675eb6d09992e35f1fe841361'
+const previousVersion = '3a8a0712993682c3dd74f6784c58e02e9e372792'
 
 const up = async (client) => {
   const UserModel = createUserModel(client.connection)

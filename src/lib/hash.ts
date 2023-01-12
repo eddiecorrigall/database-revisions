@@ -11,7 +11,7 @@ export const hash = (
   content: string | NodeJS.ArrayBufferView,
   algorithm?: HashAlgorithm
 ): string => {
-  const hash = createHash(algorithm ?? HashAlgorithm.SHA256)
+  const hash = createHash(algorithm ?? HashAlgorithm.SHA1)
   hash.update(content)
   return hash.digest('hex')
 }
