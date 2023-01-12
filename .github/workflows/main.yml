@@ -14,16 +14,10 @@ jobs:
         with:
           node-version: '16.18.1'
           cache: 'npm'
-      - name: Install NodeJS Dependencies
-        run: npm install
-      - name: Run Lint
-        run: npm run lint
-      - name: Run Unit Tests
-        run: npm test
-      - name: Run build
-        run: npm run build
-      - name: Remove Non-Production Dependencies
-        run: npm install --omit=dev
+      - run: npm install
+      - run: npm test
+      - run: npm run lint
+      - run: npm run build
       - name: Save Artifact
         if: always()
         uses: actions/upload-artifact@v3
