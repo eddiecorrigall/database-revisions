@@ -1,8 +1,8 @@
 import { Client } from '../client/postgres'
 import { getLogger, ILogger } from '../lib/logger'
+import { IRevision } from '../revision'
 import {
   IPersistenceFacade,
-  IRevision,
   MigrationServiceError
 } from '../service'
 
@@ -15,6 +15,10 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
 
   public getNamespaceColumnName (): string {
     return 'namespace'
+  }
+
+  public getPreviousVersionColumnName (): string {
+    return 'previous_version'
   }
 
   public getVersionColumnName (): string {
@@ -38,7 +42,8 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
     await client.query(`
       CREATE TABLE IF NOT EXISTS ${this.getTableName()} (
         ${this.getNamespaceColumnName()} TEXT UNIQUE NOT NULL,
-        ${this.getVersionColumnName()} TEXT NOT NULL,
+        ${this.getPreviousVersionColumnName()} TEXT UNIQUE,
+        ${this.getVersionColumnName()} TEXT UNIQUE NOT NULL,
         ${this.getFileColumnName()} TEXT NOT NULL,
         ${this.getCreatedAtColumnName()}
           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -81,6 +86,8 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
       }
       case 1: {
         const revision = {
+          previousVersion:
+            result.rows[0][this.getPreviousVersionColumnName()] ?? undefined,
           version: result.rows[0][this.getVersionColumnName()],
           file: result.rows[0][this.getFileColumnName()],
           createdAt: result.rows[0][this.getCreatedAtColumnName()]
@@ -109,6 +116,11 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
     this.logger.info('Set PostgreSQL revision', { namespace, revision })
     const updateStatement = `
       UPDATE ${this.getTableName()} SET
+        ${this.getPreviousVersionColumnName()} = ${
+          revision.previousVersion === undefined
+            ? 'NULL'
+            : '\'' + revision.previousVersion + '\''
+        },
         ${this.getVersionColumnName()} = '${revision.version}',
         ${this.getFileColumnName()} = '${revision.file}'
       WHERE ${this.getNamespaceColumnName()} = '${namespace}'
@@ -121,10 +133,16 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
     const insertStatement = `
       INSERT INTO ${this.getTableName()} (
         ${this.getNamespaceColumnName()},
+        ${this.getPreviousVersionColumnName()},
         ${this.getVersionColumnName()},
         ${this.getFileColumnName()}
       ) VALUES (
         '${namespace}',
+        ${
+          revision.previousVersion === undefined
+            ? 'NULL'
+            : '\'' + revision.previousVersion + '\''
+        },
         '${revision.version}',
         '${revision.file}'
       )

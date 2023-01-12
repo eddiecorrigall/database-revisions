@@ -12,6 +12,7 @@ import {
   IDatabaseConnectionManager,
   IPersistenceFacade
 } from './service'
+import { IRevision, loadDirectory, revisionModuleAsRevision } from './revision'
 
 // eg. your-app-name
 const MIGRATE_NAMESPACE = expectEnv('MIGRATE_NAMESPACE')
@@ -50,27 +51,6 @@ process.on('exit', () => {
 
 const migrationService = new DatabaseMigrationService({ dao, logger })
 
-const _fetchCurrentVersion = async (): Promise<string | undefined> => {
-  let version
-  await db.transaction(async (client: unknown) => {
-    await dao.initialize(client)
-    version = await migrationService.fetchCurrentVersion(
-      client,
-      MIGRATE_NAMESPACE
-    )
-  })
-  return version
-}
-
-const fetchCurrentVersion = async (): Promise<void> => {
-  const currentVersion = await _fetchCurrentVersion()
-  if (currentVersion === undefined) {
-    console.log('no version')
-  } else {
-    console.log(currentVersion)
-  }
-}
-
 const newRevision = async (description: string): Promise<void> => {
   const revisionFile = await migrationService.newRevision(
     MIGRATE_DIRECTORY,
@@ -80,18 +60,26 @@ const newRevision = async (description: string): Promise<void> => {
 }
 
 const listRevisions = async (): Promise<void> => {
-  const revisions = migrationService.computeRevisions(MIGRATE_DIRECTORY)
-  const currentVersion = await _fetchCurrentVersion()
-  const currentVersionIndex = revisions.findIndex(
-    (revision) => revision.version === currentVersion
+  let currentRevision: IRevision | undefined
+  await db.transaction(async (client: unknown) => {
+    await dao.initialize(client)
+    currentRevision = await migrationService.fetchCurrentRevision(
+      client,
+      MIGRATE_NAMESPACE
+    )
+  })
+  const revisionModules = loadDirectory(MIGRATE_DIRECTORY)
+  const revisions = revisionModules.map(revisionModuleAsRevision)
+  const currentRevisionIndex = revisions.findIndex(
+    (revision) => revision.version === currentRevision?.version
   )
   for (let index = 0; index < revisions.length; index++) {
     const revision = revisions[index]
     const displayPreviousVersion = revision.previousVersion ?? '(base)'
     let displayVersion = revision.version
-    if (index === currentVersionIndex) {
+    if (index === currentRevisionIndex) {
       displayVersion += ' (current)'
-    } else if (index < currentVersionIndex) {
+    } else if (index < currentRevisionIndex) {
       displayVersion += ' (applied)'
     } else {
       displayVersion += ' (pending)'
@@ -114,25 +102,25 @@ const upgrade = async (): Promise<void> => {
     console.log('upgrading...')
     const {
       initialRevision,
-      finalRevision
+      pendingRevisions
     } = await migrationService.upgrade(
-      client, MIGRATE_NAMESPACE, MIGRATE_DIRECTORY)
-    if (finalRevision === undefined) {
+      client, MIGRATE_NAMESPACE, MIGRATE_DIRECTORY
+    )
+    const finalRevision = pendingRevisions[pendingRevisions.length - 1]
+    if (pendingRevisions.length === 0) {
       console.log('nothing to upgrade')
+    } else if (initialRevision === undefined) {
+      console.log(`version: (base) -> ${finalRevision.version}`)
+      console.log(`file:    (base) -> ${basename(finalRevision.file)}`)
     } else {
-      if (initialRevision === undefined) {
-        console.log(`version: (base) -> ${finalRevision.version}`)
-        console.log(`file:    (base) -> ${basename(finalRevision.file)}`)
-      } else {
-        console.log(
-          'version: ' +
-          `${initialRevision.version} -> ${finalRevision.version}`
-        )
-        console.log(
-          'file:    ' +
-          `${basename(initialRevision.file)} -> ${basename(finalRevision.file)}`
-        )
-      }
+      console.log(
+        'version: ' +
+        `${initialRevision.version} -> ${finalRevision.version}`
+      )
+      console.log(
+        'file:    ' +
+        `${basename(initialRevision.file)} -> ${basename(finalRevision.file)}`
+      )
     }
     // Unlock resource
     await dao.releaseExclusiveLock(client)
@@ -148,30 +136,27 @@ const downgrade = async (): Promise<void> => {
     // Revert current revision
     console.log('downgrading...')
     const {
-      initialRevision,
-      finalRevision
+      finalRevision,
+      pendingRevisions
     } = await migrationService.downgrade(
       client, MIGRATE_NAMESPACE, MIGRATE_DIRECTORY)
-    if (finalRevision === undefined) {
-      if (initialRevision === undefined) {
-        console.log('nothing to downgrade')
-      } else {
-        console.log(`version: ${initialRevision.version} -> (base)`)
-        console.log(`file:    ${basename(initialRevision.file)} -> (base)`)
-      }
+
+    const initialRevision = pendingRevisions[0]
+
+    if (pendingRevisions.length === 0) {
+      console.log('nothing to downgrade')
+    } else if (finalRevision === undefined) {
+      console.log(`version: ${initialRevision.version} -> (base)`)
+      console.log(`file:    ${basename(initialRevision.file)} -> (base)`)
     } else {
-      if (initialRevision === undefined) {
-        throw new Error('this should not be possible')
-      } else {
-        console.log(
-          'version: ' +
-          `${initialRevision.version} -> ${finalRevision.version}`
-        )
-        console.log(
-          'file:    ' +
-          `${basename(initialRevision.file)} -> ${basename(finalRevision.file)}`
-        )
-      }
+      console.log(
+        'version: ' +
+        `${initialRevision.version} -> ${finalRevision.version}`
+      )
+      console.log(
+        'file:    ' +
+        `${basename(initialRevision.file)} -> ${basename(finalRevision.file)}`
+      )
     }
     // Unlock resource
     await dao.releaseExclusiveLock(client)
@@ -180,7 +165,7 @@ const downgrade = async (): Promise<void> => {
 }
 
 const printUsage = async (): Promise<void> => {
-  console.log('Usage: migrate [up|down|version|help]')
+  console.log('Usage: migrate [new|list|up|down|help]')
   console.log('Environment variables:')
   console.log(
     '  MIGRATE_NAMESPACE ' +
@@ -218,7 +203,6 @@ const onFailure = (reason?: string): void => {
 const command = args[0].toLowerCase()
 
 switch (command) {
-  case 'version': fetchCurrentVersion().then(onSuccess, onFailure); break
   case 'new': {
     const description = process.argv[3]
     if (description === undefined) {

@@ -3,15 +3,16 @@ import { Connection, Model, Schema } from 'mongoose'
 
 import { Client } from '../client/mongodb'
 import { getLogger, ILogger } from '../lib/logger'
+import { IRevision } from '../revision'
 import {
   IPersistenceFacade,
-  IRevision,
   MigrationServiceError
 } from '../service'
 
 export const COLLECTION_NAME = 'migrations'
 
 export const PROPERTY_NAME_NAMESPACE = 'namespace'
+export const PROPERTY_NAME_PREVIOUS_VERSION = 'previousVersion'
 export const PROPERTY_NAME_VERSION = 'version'
 export const PROPERTY_NAME_FILE = 'file'
 export const PROPERTY_NAME_CREATED_AT = 'createdAt'
@@ -20,6 +21,11 @@ export const MigrationsDefinition = {
   [PROPERTY_NAME_NAMESPACE]: {
     type: Schema.Types.String,
     required: true,
+    unique: true
+  },
+  [PROPERTY_NAME_PREVIOUS_VERSION]: {
+    type: Schema.Types.String,
+    required: false,
     unique: true
   },
   [PROPERTY_NAME_VERSION]: {
@@ -40,6 +46,7 @@ export const MigrationsSchema = new Schema(MigrationsDefinition)
 
 export type MigrationsModel = Model<{
   namespace: string
+  previousVersion: string
   version: string
   file: string
   createdAt: Date
@@ -54,6 +61,10 @@ export class MongoDBPersistence implements IPersistenceFacade<Client> {
 
   public getNamespacePropertyName (): string {
     return PROPERTY_NAME_NAMESPACE
+  }
+
+  public getPreviousVersionPropertyName (): string {
+    return PROPERTY_NAME_PREVIOUS_VERSION
   }
 
   public getVersionPropertyName (): string {
@@ -112,6 +123,7 @@ export class MongoDBPersistence implements IPersistenceFacade<Client> {
       }
       case 1: {
         const revision = {
+          previousVersion: documents[0].previousVersion ?? undefined,
           version: documents[0].version,
           file: documents[0].file,
           createdAt: documents[0].createdAt
@@ -145,6 +157,8 @@ export class MongoDBPersistence implements IPersistenceFacade<Client> {
       },
       {
         [this.getNamespacePropertyName()]: namespace,
+        [this.getPreviousVersionPropertyName()]:
+          revision.previousVersion ?? null,
         [this.getVersionPropertyName()]: revision.version,
         [this.getFilePropertyName()]: revision.file,
         [this.getCreatedAtPropertyName()]: new Date()

@@ -1,8 +1,17 @@
-import { readdirSync, writeFileSync } from 'fs'
+import { writeFileSync } from 'fs'
 import { join as pathJoin } from 'path'
+import { mapBy } from './lib/map'
 
-import { hash, hashFile } from './lib/hash'
 import { getLogger, ILogger } from './lib/logger'
+import {
+  generateFileContent,
+  generateFileName,
+  IRevision,
+  loadDirectory,
+  resolveDowngradePath,
+  resolveUpgradePath,
+  revisionModuleAsRevision
+} from './revision'
 
 export class MigrationServiceError extends Error {}
 
@@ -12,13 +21,6 @@ export interface IDatabaseConnectionManager<Client> {
   transaction: <Data>(
     callback: (client: Client) => Promise<Data | undefined>
   ) => Promise<Data | undefined>
-}
-
-export interface IRevision {
-  readonly file: string
-  readonly version: string
-  readonly previousVersion?: string
-  readonly createdAt?: Date
 }
 
 export interface IPersistenceFacade<Client> {
@@ -48,47 +50,36 @@ export interface IPersistenceFacade<Client> {
   removeNamespace: (client: Client, namespace: string) => Promise<void>
 }
 
+export interface UpgradePath {
+  initialRevision: IRevision | undefined
+  pendingRevisions: IRevision[]
+}
+
+export interface DowngradePath {
+  finalRevision: IRevision | undefined
+  pendingRevisions: IRevision[]
+}
+
 export interface IDatabaseMigrationService<Client> {
-  fetchCurrentVersion: (
+  fetchCurrentRevision: (
     client: Client,
     namespace: string
-  ) => Promise<string | undefined>
+  ) => Promise<IRevision | undefined>
   newRevision: (
     revisionDirectory: string,
     description: string
   ) => Promise<string>
-  computeRevisions: (revisionDirectory: string) => IRevision[]
   upgrade: (
     client: Client,
     namespace: string,
     revisionDirectory: string
-  ) => Promise<{ initialRevision?: IRevision, finalRevision?: IRevision }>
+  ) => Promise<UpgradePath>
   downgrade: (
     client: Client,
     namespace: string,
     revisionDirectory: string
-  ) => Promise<{ initialRevision?: IRevision, finalRevision?: IRevision }>
+  ) => Promise<DowngradePath>
 }
-
-export const getRevisionFileName = (description: string): string => {
-  const timestamp = Date.now()
-  const label = description
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '-')
-    .substring(0, 50)
-  return `${timestamp}_${label}.revision.js`
-}
-
-export const getRevisionFileContent = (
-  previousVersion: string | undefined
-): string => (
-  previousVersion === undefined
-    ? 'const previousVersion = undefined\n'
-    : `const previousVersion = '${previousVersion}'\n` +
-  'const up = async (client) => {}\n' +
-  'const down = async (client) => {}\n' +
-  'module.exports = { previousVersion, up, down }\n'
-)
 
 export class DatabaseMigrationService<Client>
 implements IDatabaseMigrationService<Client> {
@@ -101,56 +92,28 @@ implements IDatabaseMigrationService<Client> {
     this.logger = options.logger ?? getLogger(DatabaseMigrationService.name)
   }
 
-  public async fetchCurrentVersion (
+  public async fetchCurrentRevision (
     client: Client,
     namespace: string
-  ): Promise<string | undefined> {
-    const revision = await this.dao.fetchCurrentRevision(client, namespace)
-    return revision?.version
-  }
-
-  public revisionFileFilter (file: string): boolean {
-    const pattern = /^.+\.revision\.(ts|js)$/
-    return pattern.test(file)
-  }
-
-  public computeRevisions (revisionDirectory: string): IRevision[] {
-    this.logger.debug('Compute revisions', { revisionDirectory })
-    const files = readdirSync(revisionDirectory)
-      .filter(this.revisionFileFilter)
-      .map((file) => pathJoin(revisionDirectory, file))
-    this.logger.debug('Compute revisions', { files })
-    let previousVersion
-    const revisions: IRevision[] = []
-    for (const file of files) {
-      // Build a Merkel Tree
-      // https://en.wikipedia.org/wiki/Merkle_tree
-      const version: string = previousVersion === undefined
-        ? hashFile(file)
-        : hash(previousVersion + hashFile(file))
-      revisions.push({
-        file,
-        version,
-        previousVersion
-      })
-      previousVersion = version
-    }
-    this.logger.debug('Compute revisions', { revisions })
-    return revisions
+  ): Promise<IRevision | undefined> {
+    return await this.dao.fetchCurrentRevision(client, namespace)
   }
 
   public async newRevision (
     revisionDirectory: string,
     description: string
   ): Promise<string> {
-    const revisions = await this.computeRevisions(revisionDirectory)
-    const latestRevision = revisions[revisions.length - 1]
+    const untrustedRevisionModules = await loadDirectory(revisionDirectory)
+    const {
+      pendingRevisions
+    } = resolveUpgradePath(untrustedRevisionModules, undefined)
+    const latestRevision = pendingRevisions[pendingRevisions.length - 1]
 
     const filePath = pathJoin(
       revisionDirectory,
-      getRevisionFileName(description)
+      generateFileName(description)
     )
-    const fileContent = getRevisionFileContent(latestRevision.version)
+    const fileContent = generateFileContent(latestRevision.version)
 
     writeFileSync(filePath, fileContent)
 
@@ -161,13 +124,13 @@ implements IDatabaseMigrationService<Client> {
     client: Client,
     namespace: string,
     revisionDirectory: string
-  ): Promise<{ initialRevision?: IRevision, finalRevision?: IRevision }> {
+  ): Promise<UpgradePath> {
     // Upgrade to latest version - apply zero or more pending revisions
 
     /* IMPORTANT
      *
-     * NodeJS fs.readdirSync() returns files lexicographically, which is the
-     * same order that revisions will be applied.
+     * NodeJS fs.readdirSync() returns files lexicographically, which is NOT
+     * the same order that revisions will be applied.
      *
      * To ensure a rollback of all pending revisions, pass a database
      * transaction and lock the table in exclusive mode to prevent concurrent
@@ -175,136 +138,74 @@ implements IDatabaseMigrationService<Client> {
      */
     this.logger.info('Upgrade database', { namespace, revisionDirectory })
 
-    const revisions = this.computeRevisions(revisionDirectory)
+    const revisionModules = loadDirectory(revisionDirectory)
 
-    // TODO: verify path from final revision to initial revision
+    const currentRevision = await this.fetchCurrentRevision(client, namespace)
+    const upgradePath = resolveUpgradePath(revisionModules, currentRevision)
 
-    let initialRevisionIndex
-    const initialRevisionVersion =
-      await this.fetchCurrentVersion(client, namespace)
-
-    // Determine index of the next pending revision
-    let nextPendingRevisionIndex
-    if (initialRevisionVersion === undefined) {
-      // All revisions are pending
-      nextPendingRevisionIndex = 0
-    } else {
-      initialRevisionIndex = revisions.findIndex(
-        (revision) => revision.version === initialRevisionVersion
-      )
-      if (initialRevisionIndex < 0) {
-        // Cannot determine current index of revisions:
-        // either the database version is corrupt,
-        // or the files have been retro-actively modified.
-        throw new MigrationServiceError('cannot resolve upgrade path')
-      }
-      nextPendingRevisionIndex = initialRevisionIndex + 1
+    const { pendingRevisions } = upgradePath
+    if (pendingRevisions.length === 0) {
+      this.logger.info('No pending revisions')
+      return upgradePath
     }
 
-    const initialRevision = initialRevisionIndex === undefined
-      ? undefined
-      : revisions[initialRevisionIndex]
+    const revisionModulesByFile = mapBy(revisionModules, ({ file }) => file)
 
-    let finalRevisionIndex
-    while (nextPendingRevisionIndex < revisions.length) {
-      const pendingRevision = revisions[nextPendingRevisionIndex]
-      // Unpack all required functions to guarantee downgrade is possible later
-
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { up, down } = require(pendingRevision.file)
-      if (typeof up !== 'function') {
-        throw new MigrationServiceError('revision missing up function')
-      }
-      if (typeof down !== 'function') {
-        throw new MigrationServiceError('revision requires a down function')
-      }
-
+    for (const pendingRevision of pendingRevisions) {
       this.logger.info('Applying revision', { revision: pendingRevision })
+      const pendingRevisionModule = revisionModulesByFile[pendingRevision.file]
+      if (pendingRevisionModule === undefined) {
+        throw new Error('cannot find associated pending revision module')
+      }
+      const { up } = pendingRevisionModule
       await up(client)
-
-      finalRevisionIndex = nextPendingRevisionIndex
-      nextPendingRevisionIndex++
     }
-    let finalRevision
-    if (finalRevisionIndex === undefined) {
-      this.logger.info('No upgrade necessary')
-    } else {
-      finalRevision = revisions[finalRevisionIndex]
+
+    if (pendingRevisions.length > 0) {
+      const finalRevision = pendingRevisions[pendingRevisions.length - 1]
       await this.dao.setCurrentRevision(client, namespace, finalRevision)
     }
-    return {
-      initialRevision,
-      finalRevision
-    }
+
+    return upgradePath
   }
 
   public async downgrade (
     client: Client,
     namespace: string,
     revisionDirectory: string
-  ): Promise<{ initialRevision?: IRevision, finalRevision?: IRevision }> {
+  ): Promise<DowngradePath> {
     // Downgrade from current version - revert only one revision
 
     this.logger.info('Downgrade database', { namespace, revisionDirectory })
 
-    const revisions = this.computeRevisions(revisionDirectory)
+    const revisionModules = loadDirectory(revisionDirectory)
+    const revisions = revisionModules.map(revisionModuleAsRevision)
 
-    let initialRevisionIndex
-    const initialRevisionVersion =
-      await this.fetchCurrentVersion(client, namespace)
+    const currentRevision = await this.fetchCurrentRevision(client, namespace)
+    const downgradePath = resolveDowngradePath(revisions, currentRevision)
 
-    // Determine index of the last revision
-    if (initialRevisionVersion === undefined) {
-      this.logger.info('No downgrade necessary')
-      return {
-        initialRevision: undefined,
-        finalRevision: undefined
-      }
-    } else {
-      initialRevisionIndex = revisions.findIndex(
-        (revision) => revision.version === initialRevisionVersion
-      )
-      if (initialRevisionIndex < 0) {
-        // Cannot determine initial head index of revisions
-        // Either the database version has corrupted,
-        // or the files have been retro-actively modified
-        throw new MigrationServiceError(
-          'cannot resolve downgrade path - could not find initial revision'
-        )
-      }
+    const { finalRevision, pendingRevisions } = downgradePath
+    if (pendingRevisions.length === 0) {
+      this.logger.debug('Nothing to downgrade')
+      return downgradePath
+    }
+    const pendingRevisionModule = revisionModules.find(
+      (revisionModule) => revisionModule.file === pendingRevisions[0].file
+    )
+    if (pendingRevisionModule === undefined) {
+      throw new Error('cannot find associated initial revision module')
     }
 
-    const initialRevision = revisions[initialRevisionIndex]
-
-    this.logger.debug(
-      'Downgrade database - downgrading from revision',
-      { initialRevision }
-    )
-
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { down } = require(initialRevision.file)
+    const { down } = pendingRevisionModule
     await down(client)
 
-    let finalRevisionIndex
-    let finalRevision
-    if (initialRevision.previousVersion === undefined) {
+    if (finalRevision === undefined) {
       await this.dao.removeNamespace(client, namespace)
-    } else {
-      finalRevisionIndex = revisions.findIndex(
-        (revision) => revision.version === initialRevision.previousVersion
-      )
-      if (finalRevisionIndex < 0) {
-        throw new MigrationServiceError(
-          'cannot resolve downgrade path - could not find final revision'
-        )
-      }
-      finalRevision = revisions[finalRevisionIndex]
-      await this.dao.setCurrentRevision(client, namespace, finalRevision)
+      return downgradePath
     }
 
-    return {
-      initialRevision,
-      finalRevision
-    }
+    await this.dao.setCurrentRevision(client, namespace, finalRevision)
+
+    return downgradePath
   }
 }
