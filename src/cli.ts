@@ -52,6 +52,7 @@ process.on('exit', () => {
 const migrationService = new DatabaseMigrationService({ dao, logger })
 
 const newRevision = async (description: string): Promise<void> => {
+  console.log('New revision...')
   const revisionFile = await migrationService.newRevision(
     MIGRATE_DIRECTORY,
     description
@@ -59,7 +60,30 @@ const newRevision = async (description: string): Promise<void> => {
   console.log(`file: ${revisionFile}`)
 }
 
+const fetchCurrentRevision = async (): Promise<void> => {
+  console.log('Fetching current revision...')
+  let currentRevision: IRevision | undefined
+  await db.transaction(async (client: unknown) => {
+    await dao.initialize(client)
+    currentRevision = await migrationService.fetchCurrentRevision(
+      client,
+      MIGRATE_NAMESPACE
+    )
+  })
+  if (currentRevision === undefined) {
+    console.log('version: (base)')
+  } else {
+    const displayPreviousVersion = currentRevision.previousVersion ?? '(base)'
+    const displayVersion = currentRevision.version
+    const displayFile = basename(currentRevision.file)
+    console.log(`previous: ${displayPreviousVersion}`)
+    console.log(`version:  ${displayVersion}`)
+    console.log(`file:     ${displayFile}`)
+  }
+}
+
 const listRevisions = async (): Promise<void> => {
+  console.log('Listing revisions...')
   let currentRevision: IRevision | undefined
   await db.transaction(async (client: unknown) => {
     await dao.initialize(client)
@@ -94,12 +118,12 @@ const listRevisions = async (): Promise<void> => {
 }
 
 const upgrade = async (): Promise<void> => {
+  console.log('Upgrading database...')
   await db.transaction(async (client: unknown) => {
     await dao.initialize(client)
     // Lock all concurrent writes, but allow concurrent reads
     await dao.acquireExclusiveLock(client)
     // Apply all pending revisions
-    console.log('upgrading...')
     const {
       initialRevision,
       pendingRevisions
@@ -129,12 +153,12 @@ const upgrade = async (): Promise<void> => {
 }
 
 const downgrade = async (): Promise<void> => {
+  console.log('Downgrading database...')
   await db.transaction(async (client: unknown) => {
     await dao.initialize(client)
     // Lock all concurrent writes, but allow concurrent reads
     await dao.acquireExclusiveLock(client)
     // Revert current revision
-    console.log('downgrading...')
     const {
       finalRevision,
       pendingRevisions
@@ -165,7 +189,7 @@ const downgrade = async (): Promise<void> => {
 }
 
 const printUsage = async (): Promise<void> => {
-  console.log('Usage: migrate [new|list|up|down|help]')
+  console.log('Usage: migrate [new|version|list|up|down|help]')
   console.log('Environment variables:')
   console.log(
     '  MIGRATE_NAMESPACE ' +
@@ -214,6 +238,7 @@ switch (command) {
     }
     break
   }
+  case 'version': fetchCurrentRevision().then(onSuccess, onFailure); break
   case 'list': listRevisions().then(onSuccess, onFailure); break
   case 'up': upgrade().then(onSuccess, onFailure); break
   case 'down': downgrade().then(onSuccess, onFailure); break
