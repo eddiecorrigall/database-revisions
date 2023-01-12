@@ -1,6 +1,8 @@
 Node Revisions
 ==============
 
+[![Build Status](https://github.com/eddiecorrigall/node-revisions/actions/workflows/main.yml/badge.svg)](https://github.com/eddiecorrigall/node-revisions/actions/workflows/main.yml)
+
 | Command             | Description                                  |
 | ------------------- | -------------------------------------------- |
 | `new [description]` | create a new revision                        |
