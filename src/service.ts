@@ -104,16 +104,20 @@ implements IDatabaseMigrationService<Client> {
     description: string
   ): Promise<string> {
     const untrustedRevisionModules = await loadDirectory(revisionDirectory)
-    const {
-      pendingRevisions
-    } = resolveUpgradePath(untrustedRevisionModules, undefined)
-    const latestRevision = pendingRevisions[pendingRevisions.length - 1]
+    let latestVersion
+    if (untrustedRevisionModules.length > 0) {
+      const {
+        pendingRevisions
+      } = resolveUpgradePath(untrustedRevisionModules, undefined)
+      const latestRevision = pendingRevisions[pendingRevisions.length - 1]
+      latestVersion = latestRevision.version
+    }
 
     const filePath = pathJoin(
       revisionDirectory,
       generateFileName(description)
     )
-    const fileContent = generateFileContent(latestRevision.version)
+    const fileContent = generateFileContent(latestVersion)
 
     writeFileSync(filePath, fileContent)
 

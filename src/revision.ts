@@ -81,7 +81,11 @@ export const loadDirectory = (revisionDirectory: string): IRevisionModule[] => {
   for (const file of files) {
     revisionModules.push(loadFile(file))
   }
-  return sortAndVerifyRevisionModules(revisionModules)
+  if (revisionModules.length === 0) {
+    return []
+  } else {
+    return sortAndVerifyRevisionModules(revisionModules)
+  }
 }
 
 export const verifyRevisionModule = (
@@ -148,7 +152,10 @@ export const sortAndVerifyRevisionModules = (
     }
   }
   if (sortedRevisionModules.length !== unsortedRevisionModules.length) {
-    throw new Error('revisions are disjoint')
+    const suspectedFile = sortedRevisionModules[
+      sortedRevisionModules.length - 1
+    ].file
+    throw new Error(`revisions are disjoint - check file ${suspectedFile}`)
   }
   return sortedRevisionModules
 }
@@ -266,9 +273,11 @@ export const generateFileName = (description: string): string => {
 export const generateFileContent = (
   previousVersion: string | undefined
 ): string => (
-  previousVersion === undefined
-    ? 'const previousVersion = undefined\n'
-    : `const previousVersion = '${previousVersion}'\n` +
+  (
+    previousVersion === undefined
+      ? 'const previousVersion = undefined\n'
+      : `const previousVersion = '${previousVersion}'\n`
+  ) +
   'const up = async (client) => {}\n' +
   'const down = async (client) => {}\n' +
   'module.exports = { previousVersion, up, down }\n'
