@@ -33,19 +33,6 @@ export const computeVersion = (
     : hash(fileHash + previousVersion)
 }
 
-export const revisionModuleAsRevision = (
-  revisionModule: IRevisionModule
-): IRevision => {
-  return {
-    file: revisionModule.file,
-    version: computeVersion(
-      revisionModule.previousVersion,
-      revisionModule.fileHash
-    ),
-    previousVersion: revisionModule.previousVersion
-  }
-}
-
 export const fileFilter = (filename: string): boolean => {
   const pattern = /^.+\.revision\.(ts|js)$/
   return pattern.test(filename)
@@ -253,7 +240,11 @@ export const resolveDowngradePath = (
     throw new Error('no upgrade path - missing revision dependency')
   }
   return {
-    finalRevision: revisionModuleAsRevision(previousAppliedRevisionModule),
+    finalRevision: {
+      file: previousAppliedRevisionModule.file,
+      version: previousAppliedRevisionModule.version,
+      previousVersion: previousAppliedRevisionModule.previousVersion
+    },
     pendingRevisionModules: [currentRevisionModule]
   }
 }

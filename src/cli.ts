@@ -12,7 +12,7 @@ import {
   IDatabaseConnectionManager,
   IPersistenceFacade
 } from './service'
-import { IRevision, loadDirectory, revisionModuleAsRevision } from './revision'
+import { IRevision, loadDirectory } from './revision'
 
 // eg. your-app-name
 const MIGRATE_NAMESPACE = expectEnv('MIGRATE_NAMESPACE')
@@ -93,22 +93,21 @@ const listRevisions = async (): Promise<void> => {
     )
   })
   const revisionModules = loadDirectory(MIGRATE_DIRECTORY)
-  const revisions = revisionModules.map(revisionModuleAsRevision)
-  const currentRevisionIndex = revisions.findIndex(
+  const currentRevisionModuleIndex = revisionModules.findIndex(
     (revision) => revision.version === currentRevision?.version
   )
-  for (let index = 0; index < revisions.length; index++) {
-    const revision = revisions[index]
-    const displayPreviousVersion = revision.previousVersion ?? '(base)'
-    let displayVersion = revision.version
-    if (index === currentRevisionIndex) {
+  for (let index = 0; index < revisionModules.length; index++) {
+    const revisionModule = revisionModules[index]
+    const displayPreviousVersion = revisionModule.previousVersion ?? '(base)'
+    let displayVersion = revisionModule.version
+    if (index === currentRevisionModuleIndex) {
       displayVersion += ' (current)'
-    } else if (index < currentRevisionIndex) {
+    } else if (index < currentRevisionModuleIndex) {
       displayVersion += ' (applied)'
     } else {
       displayVersion += ' (pending)'
     }
-    const displayFile = basename(revision.file)
+    const displayFile = basename(revisionModule.file)
     console.log('---')
     console.log(`index:    ${index}`)
     console.log(`previous: ${displayPreviousVersion}`)
