@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '16.18.1'
-          cache: 'yarn'
+          cache: 'npm'
       - name: Install NodeJS Dependencies
         run: npm install
       - name: Run Lint
