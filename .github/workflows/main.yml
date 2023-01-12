@@ -31,7 +31,6 @@ jobs:
           name: artifact
           path: |
             build
-            node_modules
             package.json
             package-lock.json
           retention-days: 3
