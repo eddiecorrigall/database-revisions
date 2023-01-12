@@ -195,12 +195,12 @@ const onSuccess = (): void => {
 
 const onFailure = (reason?: string): void => {
   if (reason !== undefined) {
-    console.log(`ERROR: ${reason}`)
+    console.error(reason)
   }
   process.exit(1)
 }
 
-const command = args[0].toLowerCase()
+const command = args[0]?.toLowerCase()
 
 switch (command) {
   case 'new': {
