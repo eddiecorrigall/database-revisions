@@ -9,8 +9,9 @@
   },
   "type": "commonjs",
   "scripts": {
-    "test": "mocha",
+    "migrate": "node .",
     "preinstall": "npm audit --audit-level moderate > /dev/null",
+    "test": "mocha",
     "clean": "rm -fr ./build",
     "lint": "npx eslint src",
     "build": "npx tsc --project ./tsconfig.build.json"
