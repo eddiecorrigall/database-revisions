@@ -26,7 +26,6 @@
   "type": "commonjs",
   "scripts": {
     "migrate": "node .",
-    "preinstall": "npm audit --audit-level moderate > /dev/null",
     "test": "mocha",
     "clean": "rm -fr ./build",
     "lint": "npx eslint src",
