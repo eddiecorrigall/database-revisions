@@ -19,13 +19,13 @@
     "devops"
   ],
   "main": "build/cli.js",
+  "bin": "./bin/cli.js",
   "engine": {
     "npm": "8.19.2",
     "node": "16.18.1"
   },
   "type": "commonjs",
   "scripts": {
-    "migrate": "node .",
     "test": "mocha",
     "clean": "rm -fr ./build",
     "lint": "npx eslint src",
