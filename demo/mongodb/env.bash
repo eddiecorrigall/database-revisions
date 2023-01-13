@@ -1,6 +1,7 @@
 #!/bin/bash
 
-export DIR="$(pwd)/$(dirname -- "${BASH_SOURCE[0]}")"
+export SCRIPT="$(realpath "${BASH_SOURCE[0]}")"
+export DIR="$(dirname "$SCRIPT")"
 
 export MONGODB_URI=mongodb://localhost:27017
 
