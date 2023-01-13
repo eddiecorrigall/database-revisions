@@ -9,6 +9,6 @@ export PGDATABASE=postgres
 export PGHOST=localhost
 export PGPORT=5432
 
-export MIGRATE_NAMESPACE=demo
-export MIGRATE_CLIENT=postgresql
-export MIGRATE_DIRECTORY="$DIR/revisions"
+export REVISIONS_NAMESPACE=demo
+export REVISIONS_CLIENT=postgresql
+export REVISIONS_DIRECTORY="$DIR/revisions"

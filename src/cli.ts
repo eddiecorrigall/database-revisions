@@ -15,19 +15,19 @@ import {
 import { IRevision, loadDirectory } from './revision'
 
 // eg. your-app-name
-const MIGRATE_NAMESPACE = expectEnv('MIGRATE_NAMESPACE')
+const REVISIONS_NAMESPACE = expectEnv('REVISIONS_NAMESPACE')
 
 // eg. /Users/eddiecorrigall/repos/my-project/dist/src/revisions
-const MIGRATE_DIRECTORY = expectEnv('MIGRATE_DIRECTORY')
+const REVISIONS_DIRECTORY = expectEnv('REVISIONS_DIRECTORY')
 
 // eg. postgresql, mongodb, etc.
-const MIGRATE_CLIENT = expectEnv('MIGRATE_CLIENT')
+const REVISIONS_CLIENT = expectEnv('REVISIONS_CLIENT')
 
 const logger = getLogger('CLI')
 let db: IDatabaseConnectionManager<unknown>
 let dao: IPersistenceFacade<any>
 
-switch (MIGRATE_CLIENT) {
+switch (REVISIONS_CLIENT) {
   case 'mongodb': {
     const uri = expectEnv('MONGODB_URI')
     const connection = MongoDBConnectionManager.createConnection(uri)
@@ -40,7 +40,7 @@ switch (MIGRATE_CLIENT) {
     dao = new PostgreSQLPersistence({ logger })
   } break
   default: {
-    console.error(`ERROR: Unknown client [${MIGRATE_CLIENT}]`)
+    console.error(`ERROR: Unknown client [${REVISIONS_CLIENT}]`)
     process.exit(1)
   }
 }
@@ -54,7 +54,7 @@ const migrationService = new DatabaseMigrationService({ dao, logger })
 const newRevision = async (description: string): Promise<void> => {
   console.log('New revision...')
   const revisionFile = await migrationService.newRevision(
-    MIGRATE_DIRECTORY,
+    REVISIONS_DIRECTORY,
     description
   )
   console.log(`file: ${revisionFile}`)
@@ -67,7 +67,7 @@ const fetchCurrentRevision = async (): Promise<void> => {
     await dao.initialize(client)
     currentRevision = await migrationService.fetchCurrentRevision(
       client,
-      MIGRATE_NAMESPACE
+      REVISIONS_NAMESPACE
     )
   })
   if (currentRevision === undefined) {
@@ -89,10 +89,10 @@ const listRevisions = async (): Promise<void> => {
     await dao.initialize(client)
     currentRevision = await migrationService.fetchCurrentRevision(
       client,
-      MIGRATE_NAMESPACE
+      REVISIONS_NAMESPACE
     )
   })
-  const revisionModules = loadDirectory(MIGRATE_DIRECTORY)
+  const revisionModules = loadDirectory(REVISIONS_DIRECTORY)
   const currentRevisionModuleIndex = revisionModules.findIndex(
     (revision) => revision.version === currentRevision?.version
   )
@@ -127,7 +127,7 @@ const upgrade = async (): Promise<void> => {
       initialRevision,
       pendingRevisionModules
     } = await migrationService.upgrade(
-      client, MIGRATE_NAMESPACE, MIGRATE_DIRECTORY
+      client, REVISIONS_NAMESPACE, REVISIONS_DIRECTORY
     )
     const finalRevisionModule = pendingRevisionModules[
       pendingRevisionModules.length - 1
@@ -168,7 +168,7 @@ const downgrade = async (): Promise<void> => {
       finalRevision,
       pendingRevisionModules
     } = await migrationService.downgrade(
-      client, MIGRATE_NAMESPACE, MIGRATE_DIRECTORY)
+      client, REVISIONS_NAMESPACE, REVISIONS_DIRECTORY)
 
     const initialRevisionModule = pendingRevisionModules[0]
 
@@ -201,15 +201,15 @@ const printUsage = async (): Promise<void> => {
   console.log('Usage: migrate [new|version|list|up|down|help]')
   console.log('Environment variables:')
   console.log(
-    '  MIGRATE_NAMESPACE ' +
+    '  REVISIONS_NAMESPACE ' +
     '- namespace for managing more than one version'
   )
   console.log(
-    '  MIGRATE_DIRECTORY ' +
+    '  REVISIONS_DIRECTORY ' +
     '- path to revisions directory containing revisions files'
   )
   console.log(
-    '  MIGRATE_CLIENT    ' +
+    '  REVISIONS_CLIENT    ' +
     '- database client type (eg. postgresql, mongodb, etc)'
   )
 }
