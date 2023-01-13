@@ -1,9 +1,9 @@
-Node Revisions
-==============
+DB Revisions
+============
 
-[![Build Status](https://github.com/eddiecorrigall/node-revisions/actions/workflows/main.yml/badge.svg)](https://github.com/eddiecorrigall/node-revisions/actions/workflows/main.yml)
+[![Build Status](https://github.com/eddiecorrigall/db-revisions/actions/workflows/main.yml/badge.svg)](https://github.com/eddiecorrigall/db-revisions/actions/workflows/main.yml)
 
-Written in JavaScript, Node Revisions is a lightweight database migration tool for usage with SQL and no-SQL databases such as MongoDB and PostgreSQL.
+Written in JavaScript, DB (Database) Revisions is a lightweight database migration tool for usage with SQL and no-SQL databases such as MongoDB and PostgreSQL.
 
 ## Goals
 - Revision immutability for reproducible database migrations
@@ -70,7 +70,7 @@ docker ps
 
 # Connect to postgresql demo container hosting the database
 docker exec --interactive --tty \
-  node-revisions-postgresql-1 /bin/sh
+  db-revisions-postgresql-1 /bin/sh
 
 # Use a Postgres CLI to connect to the database
 psql

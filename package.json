@@ -52,10 +52,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eddiecorrigall/node-revisions.git"
+    "url": "git+https://github.com/eddiecorrigall/db-revisions.git"
   },
   "bugs": {
-    "url": "https://github.com/eddiecorrigall/node-revisions/issues"
+    "url": "https://github.com/eddiecorrigall/db-revisions/issues"
   },
-  "homepage": "https://github.com/eddiecorrigall/node-revisions#readme"
+  "homepage": "https://github.com/eddiecorrigall/db-revisions#readme"
 }
