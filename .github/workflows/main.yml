@@ -28,4 +28,5 @@ jobs:
             build
             package.json
             package-lock.json
+            LICENSE
           retention-days: 3

@@ -1,0 +1,13 @@
+.github
+.vscode
+demo
+docker
+node_modules
+src
+.eslintrc.json
+.gitignore
+.mocharc.json
+docker-compose.yaml
+README-publish.md
+tsconfig.build.json
+tsconfig.json
