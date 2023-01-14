@@ -6,32 +6,20 @@ import {
   MigrationServiceError
 } from '../service'
 
+const TABLE_NAME_MIGRATIONS = 'migrations'
+
+// read and write
+const COLUMN_NAME_NAMESPACE = 'namespace'
+const COLUMN_NAME_PREVIOUS_VERSION = 'previous_version'
+const COLUMN_NAME_VERSION = 'version'
+const COLUMN_NAME_FILE = 'file'
+
+// read only
+const COLUMN_NAME_CREATED_AT = 'created_at'
+const COLUMN_NAME_UPDATED_AT = 'updated_at'
+
 export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
   private readonly logger
-
-  public getTableName (): string {
-    return 'migrations'
-  }
-
-  public getNamespaceColumnName (): string {
-    return 'namespace'
-  }
-
-  public getPreviousVersionColumnName (): string {
-    return 'previous_version'
-  }
-
-  public getVersionColumnName (): string {
-    return 'version'
-  }
-
-  public getFileColumnName (): string {
-    return 'file'
-  }
-
-  public getCreatedAtColumnName (): string {
-    return 'created_at'
-  }
 
   constructor (options: { logger?: ILogger }) {
     this.logger = options.logger ?? getLogger(PostgreSQLPersistence.name)
@@ -40,12 +28,14 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
   public async initialize (client: Client): Promise<void> {
     this.logger.info('Initialize PostgreSQL persistence')
     await client.query(`
-      CREATE TABLE IF NOT EXISTS ${this.getTableName()} (
-        ${this.getNamespaceColumnName()} TEXT UNIQUE NOT NULL,
-        ${this.getPreviousVersionColumnName()} TEXT UNIQUE,
-        ${this.getVersionColumnName()} TEXT UNIQUE NOT NULL,
-        ${this.getFileColumnName()} TEXT NOT NULL,
-        ${this.getCreatedAtColumnName()}
+      CREATE TABLE IF NOT EXISTS ${TABLE_NAME_MIGRATIONS} (
+        ${COLUMN_NAME_NAMESPACE} TEXT UNIQUE NOT NULL,
+        ${COLUMN_NAME_PREVIOUS_VERSION} TEXT UNIQUE,
+        ${COLUMN_NAME_VERSION} TEXT UNIQUE NOT NULL,
+        ${COLUMN_NAME_FILE} TEXT NOT NULL,
+        ${COLUMN_NAME_CREATED_AT}
+          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        ${COLUMN_NAME_UPDATED_AT}
           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
     `)
@@ -54,7 +44,7 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
   public async acquireExclusiveLock (client: Client): Promise<void> {
     this.logger.info('Locking PostgreSQL table')
     await client.query(`
-      LOCK TABLE ONLY ${this.getTableName()}
+      LOCK TABLE ONLY ${TABLE_NAME_MIGRATIONS}
       IN EXCLUSIVE MODE
     `)
   }
@@ -71,8 +61,8 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
     this.logger.info('Get PostgreSQL revision', { namespace })
     const statement = `
       SELECT *
-      FROM ${this.getTableName()}
-      WHERE ${this.getNamespaceColumnName()} = $1
+      FROM ${TABLE_NAME_MIGRATIONS}
+      WHERE ${COLUMN_NAME_NAMESPACE} = $1
     `
     this.logger.debug(
       'Get PostgreSQL revision - query statement',
@@ -87,10 +77,11 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
       case 1: {
         const revision = {
           previousVersion:
-            result.rows[0][this.getPreviousVersionColumnName()] ?? undefined,
-          version: result.rows[0][this.getVersionColumnName()],
-          file: result.rows[0][this.getFileColumnName()],
-          createdAt: result.rows[0][this.getCreatedAtColumnName()]
+            result.rows[0][COLUMN_NAME_PREVIOUS_VERSION] ?? undefined,
+          version: result.rows[0][COLUMN_NAME_VERSION],
+          file: result.rows[0][COLUMN_NAME_FILE],
+          createdAt: result.rows[0][COLUMN_NAME_CREATED_AT],
+          updatedAt: result.rows[0][COLUMN_NAME_UPDATED_AT]
         }
         this.logger.info(
           'Get PostgreSQL revision - revision found',
@@ -115,15 +106,16 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
     // TODO: find out why parameterized queries do not insert file value
     this.logger.info('Set PostgreSQL revision', { namespace, revision })
     const updateStatement = `
-      UPDATE ${this.getTableName()} SET
-        ${this.getPreviousVersionColumnName()} = ${
+      UPDATE ${TABLE_NAME_MIGRATIONS} SET
+        ${COLUMN_NAME_PREVIOUS_VERSION} = ${
           revision.previousVersion === undefined
             ? 'NULL'
             : '\'' + revision.previousVersion + '\''
         },
-        ${this.getVersionColumnName()} = '${revision.version}',
-        ${this.getFileColumnName()} = '${revision.file}'
-      WHERE ${this.getNamespaceColumnName()} = '${namespace}'
+        ${COLUMN_NAME_VERSION} = '${revision.version}',
+        ${COLUMN_NAME_FILE} = '${revision.file}',
+        ${COLUMN_NAME_UPDATED_AT} = NOW()
+      WHERE ${COLUMN_NAME_NAMESPACE} = '${namespace}'
     `
     this.logger.debug(
       'Set PostgreSQL revision - query update statement',
@@ -131,11 +123,11 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
     )
     await client.query(updateStatement)
     const insertStatement = `
-      INSERT INTO ${this.getTableName()} (
-        ${this.getNamespaceColumnName()},
-        ${this.getPreviousVersionColumnName()},
-        ${this.getVersionColumnName()},
-        ${this.getFileColumnName()}
+      INSERT INTO ${TABLE_NAME_MIGRATIONS} (
+        ${COLUMN_NAME_NAMESPACE},
+        ${COLUMN_NAME_PREVIOUS_VERSION},
+        ${COLUMN_NAME_VERSION},
+        ${COLUMN_NAME_FILE}
       ) VALUES (
         '${namespace}',
         ${
@@ -146,7 +138,7 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
         '${revision.version}',
         '${revision.file}'
       )
-      ON CONFLICT (${this.getNamespaceColumnName()}) DO NOTHING
+      ON CONFLICT (${COLUMN_NAME_NAMESPACE}) DO NOTHING
     `
     this.logger.debug(
       'Set PostgreSQL revision - query insert statement',
@@ -161,8 +153,8 @@ export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
   ): Promise<void> {
     this.logger.info('Remove namespace', { namespace })
     await client.query(`
-      DELETE FROM ${this.getTableName()}
-      WHERE ${this.getNamespaceColumnName()} = $1
+      DELETE FROM ${TABLE_NAME_MIGRATIONS}
+      WHERE ${COLUMN_NAME_NAMESPACE} = $1
     `, [namespace])
   }
 }

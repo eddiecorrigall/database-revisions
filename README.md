@@ -126,7 +126,3 @@ To get a better understanding of database migrations, please first review concep
 4. Edit the new revision file, adding a database query for `up()` and `down()`
 5. Apply the revision against a database `npm run migrate up`
 6. Verify changes using `npm run migrate version` and `npm run migrate list`
-
-## TODO
-- include an updatedAt in the migrations table/collection
-- fix mongodb createdAt make sure its only updated on initial insert
