@@ -21,6 +21,7 @@
   "main": "build/cli/index.js",
   "bin": {
     "db": "bin/cli.js",
+    "db-revisions": "bin/cli.js",
     "migrate": "bin/cli.js",
     "revisions": "./bin/cli.js"
   },
