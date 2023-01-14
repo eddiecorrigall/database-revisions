@@ -31,14 +31,11 @@ Please note the following requirements:
 - `npm` to manage NodeJS project including scripts and project dependencies
 - NodeJS project dependencies
 
-### Install Dependencies and Build Project
+### Install Dependencies, Build and Link Project
 
 ```bash
-# Install project dependencies
-npm install
-
-# Build the project
-npm run build
+# Install command-line tool globally
+npm install -g db-revisions
 ```
 
 ### Perform Database Migrations Against Demo Database
@@ -51,13 +48,13 @@ docker compose up postgresql
 source ./demo/postgresql/env.bash
 
 # List all revisions
-npm run migrate list
+revisions list
 
 # Upgrade all pending revisions
-npm run migrate up
+revisions up
 
 # Show current version
-npm run migrate version
+revisions version
 ```
 
 ### Inspect Changes to Demo Database
@@ -121,8 +118,8 @@ With these properties, it is easy to see how one can detect change, and support 
 To get a better understanding of database migrations, please first review concepts [DDL, DML and DCL](https://www.w3schools.in/mysql/ddl-dml-dcl/).
 
 1. In source control, create a folder to store `*.revision.js` files
-2. Configure the tool environment variables, see `npm run migrate help`
-3. Create a new revision, eg. `npm run migrate new my-first`, which automatically creates a template
+2. Configure the tool environment variables, see `revisions help`
+3. Create a new revision, eg. `revisions new 'my-first-revision'`, which automatically creates a template
 4. Edit the new revision file, adding a database query for `up()` and `down()`
-5. Apply the revision against a database `npm run migrate up`
-6. Verify changes using `npm run migrate version` and `npm run migrate list`
+5. Apply the revision against a database `revisions up`
+6. Verify changes using `revisions version` and `revisions list`

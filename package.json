@@ -19,7 +19,11 @@
     "devops"
   ],
   "main": "build/cli/index.js",
-  "bin": "./bin/cli.js",
+  "bin": {
+    "db": "bin/cli.js",
+    "migrate": "bin/cli.js",
+    "revisions": "./bin/cli.js"
+  },
   "engine": {
     "npm": "8.19.2",
     "node": "16.18.1"
