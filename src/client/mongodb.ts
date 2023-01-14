@@ -1,7 +1,7 @@
 import mongoose, { ClientSession, Connection } from 'mongoose'
 
 import { getLogger, ILogger } from '../lib/logger'
-import { IDatabaseConnectionManager } from '../service'
+import { IConnectionManager } from '../service'
 
 export interface Client {
   connection: Connection
@@ -9,7 +9,7 @@ export interface Client {
 }
 
 export class MongoDBConnectionManager
-implements IDatabaseConnectionManager<Client> {
+implements IConnectionManager<Client> {
   private readonly connection: Connection
 
   private readonly logger: ILogger

@@ -2,7 +2,7 @@ import { readdirSync } from 'fs'
 import { join as pathJoin } from 'path'
 
 import { hash, hashFile } from './lib/hash'
-import { DowngradePath, UpgradePath } from './service'
+import { DowngradePath, UpgradePath } from './service/request'
 
 export interface IRevision {
   readonly file: string

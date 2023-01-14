@@ -1,20 +1,27 @@
 import { writeFileSync } from 'fs'
 import { join as pathJoin } from 'path'
 
-import { getLogger, ILogger } from './lib/logger'
+import { getLogger, ILogger } from '../lib/logger'
+import {
+  DowngradePath,
+  DowngradeRequest,
+  FetchRevisionRequest,
+  NewRevisionRequest,
+  UpgradePath,
+  UpgradeRequest
+} from './request'
 import {
   generateFileContent,
   generateFileName,
   IRevision,
-  IRevisionModule,
   loadDirectory,
   resolveDowngradePath,
   resolveUpgradePath
-} from './revision'
+} from '../revision'
 
 export class MigrationServiceError extends Error {}
 
-export interface IDatabaseConnectionManager<Client> {
+export interface IConnectionManager<Client> {
   shutdown: () => Promise<void>
   ping: () => Promise<void>
   transaction: <Data>(
@@ -49,60 +56,48 @@ export interface IPersistenceFacade<Client> {
   removeNamespace: (client: Client, namespace: string) => Promise<void>
 }
 
-export interface UpgradePath {
-  initialRevision: IRevision | undefined
-  pendingRevisionModules: IRevisionModule[]
-}
-
-export interface DowngradePath {
-  finalRevision: IRevision | undefined
-  pendingRevisionModules: IRevisionModule[]
-}
-
-export interface IDatabaseMigrationService<Client> {
+export interface IMigrationService<Client> {
+  newRevision: (
+    request: NewRevisionRequest
+  ) => Promise<string>
   fetchCurrentRevision: (
     client: Client,
-    namespace: string
+    request: FetchRevisionRequest
   ) => Promise<IRevision | undefined>
-  newRevision: (
-    revisionDirectory: string,
-    description: string
-  ) => Promise<string>
   upgrade: (
     client: Client,
-    namespace: string,
-    revisionDirectory: string
+    request: UpgradeRequest
   ) => Promise<UpgradePath>
   downgrade: (
     client: Client,
-    namespace: string,
-    revisionDirectory: string
+    request: DowngradeRequest,
   ) => Promise<DowngradePath>
 }
 
-export class DatabaseMigrationService<Client>
-implements IDatabaseMigrationService<Client> {
+export class MigrationService<Client> implements IMigrationService<Client> {
   private readonly dao: IPersistenceFacade<Client>
 
   private readonly logger: ILogger
 
-  constructor (options: { dao: IPersistenceFacade<Client>, logger?: ILogger }) {
+  constructor (options: {
+    dao: IPersistenceFacade<Client>
+    logger?: ILogger
+  }) {
     this.dao = options.dao
-    this.logger = options.logger ?? getLogger(DatabaseMigrationService.name)
+    this.logger = options.logger ?? getLogger(MigrationService.name)
   }
 
   public async fetchCurrentRevision (
     client: Client,
-    namespace: string
+    request: FetchRevisionRequest
   ): Promise<IRevision | undefined> {
-    return await this.dao.fetchCurrentRevision(client, namespace)
+    return await this.dao.fetchCurrentRevision(client, request.namespace)
   }
 
   public async newRevision (
-    revisionDirectory: string,
-    description: string
+    request: NewRevisionRequest
   ): Promise<string> {
-    const untrustedRevisionModules = await loadDirectory(revisionDirectory)
+    const untrustedRevisionModules = await loadDirectory(request.directory)
     let latestVersion
     if (untrustedRevisionModules.length > 0) {
       const {
@@ -115,8 +110,8 @@ implements IDatabaseMigrationService<Client> {
     }
 
     const filePath = pathJoin(
-      revisionDirectory,
-      generateFileName(description)
+      request.directory,
+      generateFileName(request.description)
     )
     const fileContent = generateFileContent(latestVersion)
 
@@ -127,8 +122,7 @@ implements IDatabaseMigrationService<Client> {
 
   public async upgrade (
     client: Client,
-    namespace: string,
-    revisionDirectory: string
+    request: UpgradeRequest
   ): Promise<UpgradePath> {
     // Upgrade to latest version - apply zero or more pending revisions
 
@@ -141,10 +135,12 @@ implements IDatabaseMigrationService<Client> {
      * transaction and lock the table in exclusive mode to prevent concurrent
      * writes.
      */
-    this.logger.info('Upgrade database', { namespace, revisionDirectory })
+    this.logger.info('Upgrade database', { request })
 
-    const revisionModules = loadDirectory(revisionDirectory)
-    const currentRevision = await this.fetchCurrentRevision(client, namespace)
+    const revisionModules = loadDirectory(request.directory)
+    const currentRevision = await this.fetchCurrentRevision(client, {
+      namespace: request.namespace
+    })
     const upgradePath = resolveUpgradePath(revisionModules, currentRevision)
 
     const { pendingRevisionModules } = upgradePath
@@ -166,7 +162,11 @@ implements IDatabaseMigrationService<Client> {
       const finalRevision = pendingRevisionModules[
         pendingRevisionModules.length - 1
       ]
-      await this.dao.setCurrentRevision(client, namespace, finalRevision)
+      await this.dao.setCurrentRevision(
+        client,
+        request.namespace,
+        finalRevision
+      )
     }
 
     return upgradePath
@@ -174,15 +174,16 @@ implements IDatabaseMigrationService<Client> {
 
   public async downgrade (
     client: Client,
-    namespace: string,
-    revisionDirectory: string
+    request: DowngradeRequest
   ): Promise<DowngradePath> {
     // Downgrade from current version - revert only one revision
 
-    this.logger.info('Downgrade database', { namespace, revisionDirectory })
+    this.logger.info('Downgrade database', { request })
 
-    const revisionModules = loadDirectory(revisionDirectory)
-    const currentRevision = await this.fetchCurrentRevision(client, namespace)
+    const revisionModules = loadDirectory(request.directory)
+    const currentRevision = await this.fetchCurrentRevision(client, {
+      namespace: request.namespace
+    })
     const downgradePath = resolveDowngradePath(revisionModules, currentRevision)
 
     const { finalRevision, pendingRevisionModules } = downgradePath
@@ -199,11 +200,11 @@ implements IDatabaseMigrationService<Client> {
     await down(client)
 
     if (finalRevision === undefined) {
-      await this.dao.removeNamespace(client, namespace)
+      await this.dao.removeNamespace(client, request.namespace)
       return downgradePath
     }
 
-    await this.dao.setCurrentRevision(client, namespace, finalRevision)
+    await this.dao.setCurrentRevision(client, request.namespace, finalRevision)
 
     return downgradePath
   }

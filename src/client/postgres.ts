@@ -3,7 +3,7 @@ import { Pool, PoolClient, PoolConfig } from 'pg'
 
 import { expectEnv } from '../lib/env'
 import { getLogger, ILogger } from '../lib/logger'
-import { IDatabaseConnectionManager } from '../service'
+import { IConnectionManager } from '../service'
 
 /* References:
  * - https://node-postgres.com/features/ssl
@@ -13,7 +13,7 @@ import { IDatabaseConnectionManager } from '../service'
 export type Client = PoolClient
 
 export class PostgreSQLConnectionManager
-implements IDatabaseConnectionManager<Client> {
+implements IConnectionManager<Client> {
   private readonly pool: Pool
 
   private readonly logger: ILogger

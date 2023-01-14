@@ -18,7 +18,7 @@
     "postgres",
     "devops"
   ],
-  "main": "build/cli.js",
+  "main": "build/cli/index.js",
   "bin": "./bin/cli.js",
   "engine": {
     "npm": "8.19.2",
