@@ -42,7 +42,8 @@ const loadCommand = (commandName: string): Command => {
     version: versionCommand,
     list: listCommand,
     up: upCommand,
-    down: downCommand
+    down: downCommand,
+    help: printUsage as any
   }[commandName.toLowerCase()]
   if (command === undefined) {
     printUsage()
