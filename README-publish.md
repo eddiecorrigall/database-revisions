@@ -12,8 +12,17 @@ npm version patch
 
 # Push changes to github.com
 git push
+```
 
-# IMPORTANT: assuming build pipeline completes successfully, then
+Check GitHub Actions for build status OK
+
+```bash
+# Delete build folder
+npm run clean
+
+# Build distribution
+npm run build
+
 # Publish to npmjs.com
 npm publish --access public
 ```
