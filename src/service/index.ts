@@ -191,12 +191,7 @@ export class MigrationService<Client> implements IMigrationService<Client> {
       this.logger.debug('Nothing to downgrade')
       return downgradePath
     }
-    const pendingRevisionModule = pendingRevisionModules[0]
-    if (pendingRevisionModule === undefined) {
-      throw new Error('cannot find associated initial revision module')
-    }
-
-    const { down } = pendingRevisionModule
+    const { down } = pendingRevisionModules[0]
     await down(client)
 
     if (finalRevision === undefined) {
