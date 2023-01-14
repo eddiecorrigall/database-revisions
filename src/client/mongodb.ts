@@ -27,7 +27,7 @@ implements IConnectionManager<Client> {
   public async ping (): Promise<void> {
     this.logger.debug('MongoDB client is pinging server')
     if (this.connection.readyState !== mongoose.STATES.connected) {
-      throw new Error('MongoDB client not connected')
+      throw new Error('mongodb client not connected')
     }
   }
 

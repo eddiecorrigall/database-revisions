@@ -8,7 +8,7 @@ const up = async (client) => {
     email: { $exists: false }
   }).session(client.session)
   if (!users.length) {
-    throw new Error('There should be users without emails')
+    throw new Error('expected users to have no email')
   }
   for (let i = 0; i < users.length; i++) {
     const user = users[i]
