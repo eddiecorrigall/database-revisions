@@ -30,8 +30,14 @@ export const command: Command = async (
     const displayPreviousVersion = currentRevision.previousVersion ?? '(base)'
     const displayVersion = currentRevision.version
     const displayFile = basename(currentRevision.file)
-    console.log(`previous: ${displayPreviousVersion}`)
-    console.log(`version:  ${displayVersion}`)
-    console.log(`file:     ${displayFile}`)
+    console.log(`previous:   ${displayPreviousVersion}`)
+    console.log(`version:    ${displayVersion}`)
+    console.log(`file:       ${displayFile}`)
+    if (currentRevision.createdAt !== undefined) {
+      console.log(`created at: ${currentRevision.createdAt.toISOString()}`)
+    }
+    if (currentRevision.updatedAt !== undefined) {
+      console.log(`updated at: ${currentRevision.updatedAt.toISOString()}`)
+    }
   }
 }

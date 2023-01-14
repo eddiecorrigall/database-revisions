@@ -11,11 +11,15 @@ import {
 
 export const COLLECTION_NAME = 'migrations'
 
+// read and write
 export const PROPERTY_NAME_NAMESPACE = 'namespace'
 export const PROPERTY_NAME_PREVIOUS_VERSION = 'previousVersion'
 export const PROPERTY_NAME_VERSION = 'version'
 export const PROPERTY_NAME_FILE = 'file'
+
+// read only
 export const PROPERTY_NAME_CREATED_AT = 'createdAt'
+export const PROPERTY_NAME_UPDATED_AT = 'updatedAt'
 
 export const MigrationsDefinition = {
   [PROPERTY_NAME_NAMESPACE]: {
@@ -39,45 +43,34 @@ export const MigrationsDefinition = {
   [PROPERTY_NAME_CREATED_AT]: {
     type: Schema.Types.Date,
     required: true
+  },
+  [PROPERTY_NAME_UPDATED_AT]: {
+    type: Schema.Types.Date,
+    required: true
   }
 }
 
-export const MigrationsSchema = new Schema(MigrationsDefinition)
+export const MigrationsSchema = new Schema(
+  MigrationsDefinition,
+  {
+    timestamps: {
+      createdAt: PROPERTY_NAME_CREATED_AT,
+      updatedAt: PROPERTY_NAME_UPDATED_AT
+    }
+  }
+)
 
 export type MigrationsModel = Model<{
-  namespace: string
-  previousVersion: string
-  version: string
-  file: string
-  createdAt: Date
+  [PROPERTY_NAME_NAMESPACE]: string
+  [PROPERTY_NAME_PREVIOUS_VERSION]: string
+  [PROPERTY_NAME_VERSION]: string
+  [PROPERTY_NAME_FILE]: string
+  [PROPERTY_NAME_CREATED_AT]: Date
+  [PROPERTY_NAME_UPDATED_AT]: Date
 }>
 
 export class MongoDBPersistence implements IPersistenceFacade<Client> {
   private readonly logger
-
-  public getCollectionName (): string {
-    return COLLECTION_NAME
-  }
-
-  public getNamespacePropertyName (): string {
-    return PROPERTY_NAME_NAMESPACE
-  }
-
-  public getPreviousVersionPropertyName (): string {
-    return PROPERTY_NAME_PREVIOUS_VERSION
-  }
-
-  public getVersionPropertyName (): string {
-    return PROPERTY_NAME_VERSION
-  }
-
-  public getFilePropertyName (): string {
-    return PROPERTY_NAME_FILE
-  }
-
-  public getCreatedAtPropertyName (): string {
-    return PROPERTY_NAME_CREATED_AT
-  }
 
   public createMigrationsModel (connection: Connection): MigrationsModel {
     return connection.model(COLLECTION_NAME, MigrationsSchema)
@@ -122,11 +115,19 @@ export class MongoDBPersistence implements IPersistenceFacade<Client> {
         return
       }
       case 1: {
+        const {
+          previousVersion,
+          version,
+          file,
+          createdAt,
+          updatedAt
+        } = documents[0]
         const revision = {
-          previousVersion: documents[0].previousVersion ?? undefined,
-          version: documents[0].version,
-          file: documents[0].file,
-          createdAt: documents[0].createdAt
+          previousVersion: previousVersion ?? undefined,
+          version,
+          file,
+          createdAt,
+          updatedAt
         }
         this.logger.info(
           'Get PostgreSQL revision - revision found',
@@ -153,15 +154,14 @@ export class MongoDBPersistence implements IPersistenceFacade<Client> {
     const MigrationsModel = this.createMigrationsModel(client.connection)
     const document = await MigrationsModel.findOneAndUpdate(
       {
-        [this.getNamespacePropertyName()]: namespace
+        [PROPERTY_NAME_NAMESPACE]: namespace
       },
       {
-        [this.getNamespacePropertyName()]: namespace,
-        [this.getPreviousVersionPropertyName()]:
+        [PROPERTY_NAME_NAMESPACE]: namespace,
+        [PROPERTY_NAME_PREVIOUS_VERSION]:
           revision.previousVersion ?? null,
-        [this.getVersionPropertyName()]: revision.version,
-        [this.getFilePropertyName()]: revision.file,
-        [this.getCreatedAtPropertyName()]: new Date()
+        [PROPERTY_NAME_VERSION]: revision.version,
+        [PROPERTY_NAME_FILE]: revision.file
       },
       {
         new: true,
