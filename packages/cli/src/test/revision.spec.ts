@@ -1,11 +1,11 @@
 import assert from 'assert'
 
+import { IRevision, IRevisionModule } from '@db-revisions/types'
+
 import {
   computeVersion,
   fileFilter,
   generateFileName,
-  IRevision,
-  IRevisionModule,
   resolveUpgradePath,
   verifyRevisionModule
 } from '../../src/revision'

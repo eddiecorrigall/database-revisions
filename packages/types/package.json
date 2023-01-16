@@ -1,0 +1,31 @@
+{
+  "private": false,
+  "name": "@db-revisions/types",
+  "version": "0.0.1",
+  "author": "Eddie Corrigall <eddiecorrigall@gmail.com>",
+  "license": "MIT",
+  "main": "src/index.ts",
+  "types": "build/index.d.ts",
+  "engine": {
+    "npm": "8.19.2",
+    "node": "16.18.1"
+  },
+  "type": "commonjs",
+  "scripts": {
+    "clean": "rm -fr ./build",
+    "build": "npx tsc"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "typescript": "^4.9.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eddiecorrigall/db-revisions.git"
+  },
+  "bugs": {
+    "url": "https://github.com/eddiecorrigall/db-revisions/issues"
+  },
+  "homepage": "https://github.com/eddiecorrigall/db-revisions#readme"
+}

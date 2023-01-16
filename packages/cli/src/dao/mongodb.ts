@@ -1,9 +1,10 @@
 import { assert } from 'console'
 import { Connection, Model, Schema } from 'mongoose'
 
+import { IRevision } from '@db-revisions/types'
+
 import { Client } from '../client/mongodb'
 import { getLogger, ILogger } from '../lib/logger'
-import { IRevision } from '../revision'
 import {
   IPersistenceFacade,
   MigrationServiceError

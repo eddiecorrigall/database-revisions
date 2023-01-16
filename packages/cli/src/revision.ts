@@ -1,26 +1,10 @@
 import { readdirSync } from 'fs'
 import { join as pathJoin } from 'path'
 
+import { IRevision, IRevisionModule } from '@db-revisions/types'
+
 import { hash, hashFile } from './lib/hash'
 import { DowngradePath, UpgradePath } from './service/request'
-
-export interface IRevision {
-  readonly file: string
-  readonly version: string
-  readonly previousVersion: string | undefined
-  readonly createdAt?: Date
-  readonly updatedAt?: Date
-}
-
-export interface IRevisionModule {
-  previousVersion: string | undefined
-  up: (client: unknown) => unknown
-  down: (client: unknown) => unknown
-  // transients...
-  version: string
-  file: string
-  fileHash: string
-}
 
 export const computeVersion = (
   previousVersion: string | undefined,

@@ -1,6 +1,8 @@
 import { writeFileSync } from 'fs'
 import { join as pathJoin } from 'path'
 
+import { IRevision } from '@db-revisions/types'
+
 import { getLogger, ILogger } from '../lib/logger'
 import {
   DowngradePath,
@@ -13,7 +15,6 @@ import {
 import {
   generateFileContent,
   generateFileName,
-  IRevision,
   loadDirectory,
   resolveDowngradePath,
   resolveUpgradePath
@@ -97,7 +98,7 @@ export class MigrationService<Client> implements IMigrationService<Client> {
   public async newRevision (
     request: NewRevisionRequest
   ): Promise<string> {
-    const untrustedRevisionModules = await loadDirectory(request.directory)
+    const untrustedRevisionModules = loadDirectory(request.directory)
     let latestVersion
     if (untrustedRevisionModules.length > 0) {
       const {

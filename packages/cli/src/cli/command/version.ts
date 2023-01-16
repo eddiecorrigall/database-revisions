@@ -1,6 +1,7 @@
 import { basename } from 'path'
 
-import { IRevision } from '../../revision'
+import { IRevision } from '@db-revisions/types'
+
 import {
   IConnectionManager,
   IPersistenceFacade,

@@ -1,6 +1,7 @@
 import { basename } from 'path'
 
-import { IRevision, loadDirectory } from '../../revision'
+import { IRevision } from '@db-revisions/types'
+
 import {
   IConnectionManager,
   IPersistenceFacade,
@@ -8,6 +9,7 @@ import {
 } from '../../service'
 import { Config } from '../../config'
 import { Command } from '.'
+import { loadDirectory } from '../../revision'
 
 export const command: Command = async (
   config: Config,

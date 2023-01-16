@@ -1,0 +1,33 @@
+{
+  "private": true,
+  "author": "Eddie Corrigall <eddiecorrigall@gmail.com>",
+  "license": "MIT",
+  "engine": {
+    "npm": "8.19.2",
+    "node": "16.18.1"
+  },
+  "type": "commonjs",
+  "scripts": {
+    "lint": "npx eslint ./packages/*/src",
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.6.6",
+    "@typescript-eslint/eslint-plugin": "^5.48.2",
+    "eslint-config-standard-with-typescript": "^27.0.1",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "mocha": "^10.2.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eddiecorrigall/db-revisions.git"
+  },
+  "bugs": {
+    "url": "https://github.com/eddiecorrigall/db-revisions/issues"
+  },
+  "homepage": "https://github.com/eddiecorrigall/db-revisions#readme"
+}

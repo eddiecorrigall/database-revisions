@@ -9,7 +9,10 @@
   ],
   "parserOptions": {
     "ecmaVersion": "latest",
-    "project": ["./tsconfig.json"]
+    "project": [
+      "./packages/cli/tsconfig.json",
+      "./packages/types/tsconfig.json"
+    ]
   },
   "rules": {
     "quotes": [
