@@ -1,7 +1,7 @@
 {
   "private": false,
   "name": "@db-revisions/cli",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A lightweight database migration tool for SQL and no-SQL databases",
   "author": "Eddie Corrigall <eddiecorrigall@gmail.com>",
   "license": "MIT",

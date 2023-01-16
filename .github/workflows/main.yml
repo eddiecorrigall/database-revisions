@@ -5,7 +5,7 @@ on:
 permissions:
   contents: read  # required for checkout action
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -17,9 +17,34 @@ jobs:
       - run: npm audit --audit-level moderate
       - run: npm install
       - run: npm test
-      - run: npm run lint
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.18.1'
+          cache: 'npm'
+      - run: npm audit --audit-level moderate
+      - run: npm install
+      - run: npm lint
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: ./packages/cli
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.18.1'
+          cache: 'npm'
+      - run: npm audit --audit-level moderate
+      - run: npm install
       - run: npm run build
-      - name: Save Artifact
+      - name: Save Artifact CLI
         if: always()
         uses: actions/upload-artifact@v3
         with:
