@@ -15,43 +15,24 @@ jobs:
           node-version: '16.18.1'
           cache: 'npm'
       - run: npm audit --audit-level moderate
-      - run: npm install
+      - run: |
+        cd packages/types
+        npm install
+        npm run build
+      - run: |
+        cd packages/cli
+        npm install
+        npm run build
       - run: npm run test
-  lint:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '16.18.1'
-          cache: 'npm'
-      - run: npm audit --audit-level moderate
-      - run: npm install
       - run: npm run lint
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    defaults:
-      run:
-        working-directory: ./packages/cli
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '16.18.1'
-          cache: 'npm'
-      - run: npm audit --audit-level moderate
-      - run: npm install
-      - run: npm run build
       - name: Save Artifact CLI
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: db-revisions-artifact
           path: |
-            build
-            package.json
-            package-lock.json
-            LICENSE
+            packages/cli/build
+            packages/cli/package.json
+            packages/cli/package-lock.json
+            packages/cli/LICENSE
           retention-days: 3
