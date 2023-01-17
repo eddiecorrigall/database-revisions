@@ -42,6 +42,7 @@
   "devDependencies": {
     "@db-revisions/types": "file:../types",
     "@types/bunyan": "^1.8.8",
+    "@types/pg": "^8.6.6",
     "typescript": "^4.9.4"
   },
   "repository": {
