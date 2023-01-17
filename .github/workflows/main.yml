@@ -14,7 +14,6 @@ jobs:
         with:
           node-version: '16.18.1'
           cache: 'npm'
-      - run: npm audit --audit-level moderate
       - run: npm install && npm run build
         working-directory: packages/types
       - run: npm install && npm run build

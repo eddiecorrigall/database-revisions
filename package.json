@@ -8,6 +8,7 @@
   },
   "type": "commonjs",
   "scripts": {
+    "preinstall": "npm audit --audit-level low",
     "lint": "npx eslint ./packages/*/src",
     "test": "mocha"
   },

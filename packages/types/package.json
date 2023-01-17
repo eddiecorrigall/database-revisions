@@ -12,6 +12,7 @@
   },
   "type": "commonjs",
   "scripts": {
+    "preinstall": "npm audit --audit-level low",
     "clean": "rm -fr ./build",
     "build": "npx tsc"
   },
