@@ -16,7 +16,7 @@ jobs:
           cache: 'npm'
       - run: npm audit --audit-level moderate
       - run: npm install
-      - run: npm test
+      - run: npm run test
   lint:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -28,7 +28,7 @@ jobs:
           cache: 'npm'
       - run: npm audit --audit-level moderate
       - run: npm install
-      - run: npm lint
+      - run: npm run lint
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 5
