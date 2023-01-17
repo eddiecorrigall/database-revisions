@@ -15,14 +15,10 @@ jobs:
           node-version: '16.18.1'
           cache: 'npm'
       - run: npm audit --audit-level moderate
-      - run: |
-        cd packages/types
-        npm install
-        npm run build
-      - run: |
-        cd packages/cli
-        npm install
-        npm run build
+      - run: npm install && npm run build
+        working-directory: packages/types
+      - run: npm install && npm run build
+        working-directory: packages/cli
       - run: npm run test
       - run: npm run lint
       - name: Save Artifact CLI
