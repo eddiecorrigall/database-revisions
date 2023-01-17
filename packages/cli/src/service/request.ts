@@ -1,4 +1,4 @@
-import { IRevision, IRevisionModule } from '@db-revisions/types'
+import { IRevision, IRevisionModule } from '@database-revisions/types'
 
 export interface UpgradePath {
   initialRevision: IRevision | undefined

@@ -1,9 +1,9 @@
-db revisions
-============
+database-revisions
+==================
 
-[![Build Status](https://github.com/eddiecorrigall/db-revisions/actions/workflows/main.yml/badge.svg)](https://github.com/eddiecorrigall/db-revisions/actions/workflows/main.yml)
+[![Build Status](https://github.com/eddiecorrigall/database-revisions/actions/workflows/main.yml/badge.svg)](https://github.com/eddiecorrigall/database-revisions/actions/workflows/main.yml)
 
-Written in JavaScript, db (Database) revisions is a lightweight database migration tool for usage with SQL and no-SQL databases such as MongoDB and PostgreSQL.
+Written in JavaScript, database-revisions is a lightweight database migration tool for usage with SQL and no-SQL databases such as MongoDB and PostgreSQL.
 
 ## Goals
 - Revision immutability for reproducible database migrations
@@ -35,7 +35,7 @@ Please note the following requirements:
 
 ```bash
 # Install command-line tool globally
-npm install -g db-revisions
+npm install -g database-revisions
 ```
 
 OR
@@ -78,7 +78,7 @@ docker ps
 
 # Connect to postgresql demo container hosting the database
 docker exec --interactive --tty \
-  db-revisions-postgresql-1 /bin/sh
+  database-revisions-postgresql-1 /bin/sh
 
 # Use a Postgres CLI to connect to the database
 psql

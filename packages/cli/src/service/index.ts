@@ -1,7 +1,7 @@
 import { writeFileSync } from 'fs'
 import { join as pathJoin } from 'path'
 
-import { IRevision } from '@db-revisions/types'
+import { IRevision } from '@database-revisions/types'
 
 import { getLogger, ILogger } from '../lib/logger'
 import {

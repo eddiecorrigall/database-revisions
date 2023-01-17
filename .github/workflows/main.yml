@@ -25,7 +25,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: db-revisions-artifact
+          name: database-revisions-artifact
           path: |
             packages/cli/build
             packages/cli/package.json

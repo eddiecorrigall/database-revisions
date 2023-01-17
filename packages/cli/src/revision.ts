@@ -1,7 +1,7 @@
 import { readdirSync } from 'fs'
 import { join as pathJoin } from 'path'
 
-import { IRevision, IRevisionModule } from '@db-revisions/types'
+import { IRevision, IRevisionModule } from '@database-revisions/types'
 
 import { hash, hashFile } from './lib/hash'
 import { DowngradePath, UpgradePath } from './service/request'

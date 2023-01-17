@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import { IRevision, IRevisionModule } from '@db-revisions/types'
+import { IRevision, IRevisionModule } from '@database-revisions/types'
 
 import {
   computeVersion,

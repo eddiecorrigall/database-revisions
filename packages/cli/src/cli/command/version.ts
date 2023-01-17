@@ -1,6 +1,6 @@
 import { basename } from 'path'
 
-import { IRevision } from '@db-revisions/types'
+import { IRevision } from '@database-revisions/types'
 
 import {
   IConnectionManager,

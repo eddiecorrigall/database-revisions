@@ -1,6 +1,6 @@
 {
   "private": false,
-  "name": "@db-revisions/cli",
+  "name": "@database-revisions/cli",
   "version": "0.3.0",
   "description": "A lightweight database migration tool for SQL and no-SQL databases",
   "author": "Eddie Corrigall <eddiecorrigall@gmail.com>",
@@ -20,9 +20,9 @@
   ],
   "main": "build/cli/index.js",
   "bin": {
-    "db": "bin/cli.js",
-    "db-revisions": "bin/cli.js",
-    "migrate": "bin/cli.js",
+    "db": "./bin/cli.js",
+    "database-revisions": "./bin/cli.js",
+    "migrate": "./bin/cli.js",
     "revisions": "./bin/cli.js"
   },
   "engine": {
@@ -41,17 +41,17 @@
     "pg": "^8.8.0"
   },
   "devDependencies": {
-    "@db-revisions/types": "file:../types",
+    "@database-revisions/types": "file:../types",
     "@types/bunyan": "^1.8.8",
     "@types/pg": "^8.6.6",
     "typescript": "^4.9.4"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eddiecorrigall/db-revisions.git"
+    "url": "git+https://github.com/eddiecorrigall/database-revisions.git"
   },
   "bugs": {
-    "url": "https://github.com/eddiecorrigall/db-revisions/issues"
+    "url": "https://github.com/eddiecorrigall/database-revisions/issues"
   },
-  "homepage": "https://github.com/eddiecorrigall/db-revisions#readme"
+  "homepage": "https://github.com/eddiecorrigall/database-revisions#readme"
 }

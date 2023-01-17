@@ -24,5 +24,5 @@ npm run clean
 npm run build
 
 # Publish to npmjs.com
-npm publish --access public
+npm publish
 ```

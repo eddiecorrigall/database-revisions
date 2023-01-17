@@ -26,10 +26,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eddiecorrigall/db-revisions.git"
+    "url": "git+https://github.com/eddiecorrigall/database-revisions.git"
   },
   "bugs": {
-    "url": "https://github.com/eddiecorrigall/db-revisions/issues"
+    "url": "https://github.com/eddiecorrigall/database-revisions/issues"
   },
-  "homepage": "https://github.com/eddiecorrigall/db-revisions#readme"
+  "homepage": "https://github.com/eddiecorrigall/database-revisions#readme"
 }

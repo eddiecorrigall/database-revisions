@@ -1,4 +1,4 @@
-import { IRevision } from '@db-revisions/types'
+import { IRevision } from '@database-revisions/types'
 
 import { Client } from '../client/postgres'
 import { getLogger, ILogger } from '../lib/logger'
