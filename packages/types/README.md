@@ -1,4 +1,4 @@
 database-migrations/types
 =========================
 
-Typing for database-migration.
+Typing for database-revisions.
