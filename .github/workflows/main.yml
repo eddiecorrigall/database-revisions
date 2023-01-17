@@ -5,7 +5,7 @@ on:
 permissions:
   contents: read  # required for checkout action
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -19,6 +19,7 @@ jobs:
         working-directory: packages/types
       - run: npm install && npm run build
         working-directory: packages/cli
+      - run: npm install
       - run: npm run test
       - run: npm run lint
       - name: Save Artifact CLI
