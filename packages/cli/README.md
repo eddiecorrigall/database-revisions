@@ -35,7 +35,7 @@ Please note the following requirements:
 
 ```bash
 # Install command-line tool globally
-npm install -g database-revisions
+npm install -g @database-revisions/cli
 ```
 
 OR
