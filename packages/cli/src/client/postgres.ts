@@ -1,9 +1,9 @@
+import { IConnectionManager } from '@database-revisions/types'
 import { readFileSync } from 'fs'
 import { Pool, PoolClient, PoolConfig } from 'pg'
 
 import { expectEnv } from '../lib/env'
 import { getLogger, ILogger } from '../lib/logger'
-import { IConnectionManager } from '../service'
 
 /* References:
  * - https://node-postgres.com/features/ssl

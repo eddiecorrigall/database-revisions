@@ -1,14 +1,11 @@
 import { assert } from 'console'
 import { Connection, Model, Schema } from 'mongoose'
 
-import { IRevision } from '@database-revisions/types'
+import { IPersistenceFacade, IRevision } from '@database-revisions/types'
 
 import { Client } from '../client/mongodb'
 import { getLogger, ILogger } from '../lib/logger'
-import {
-  IPersistenceFacade,
-  MigrationServiceError
-} from '../service'
+import { MigrationServiceError } from '../service'
 
 export const COLLECTION_NAME = 'migrations'
 

@@ -1,9 +1,8 @@
-import { IRevision } from '@database-revisions/types'
+import { IPersistenceFacade, IRevision } from '@database-revisions/types'
 
 import { Client } from '../client/postgres'
 import { getLogger, ILogger } from '../lib/logger'
 import {
-  IPersistenceFacade,
   MigrationServiceError
 } from '../service'
 

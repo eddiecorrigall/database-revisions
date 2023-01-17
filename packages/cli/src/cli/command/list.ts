@@ -1,10 +1,12 @@
 import { basename } from 'path'
 
-import { IRevision } from '@database-revisions/types'
-
 import {
   IConnectionManager,
   IPersistenceFacade,
+  IRevision
+} from '@database-revisions/types'
+
+import {
   MigrationService
 } from '../../service'
 import { Config } from '../../config'

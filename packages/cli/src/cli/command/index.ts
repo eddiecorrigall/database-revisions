@@ -1,7 +1,9 @@
-import { Config } from '../../config'
 import {
   IConnectionManager,
-  IPersistenceFacade,
+  IPersistenceFacade
+} from '@database-revisions/types'
+import { Config } from '../../config'
+import {
   MigrationService
 } from '../../service'
 

@@ -5,11 +5,7 @@ import { MongoDBConnectionManager } from '../client/mongodb'
 import { PostgreSQLConnectionManager } from '../client/postgres'
 import { MongoDBPersistence } from '../dao/mongodb'
 import { PostgreSQLPersistence } from '../dao/postgres'
-import {
-  MigrationService,
-  IConnectionManager,
-  IPersistenceFacade
-} from '../service'
+import { MigrationService } from '../service'
 
 import { command as newCommand } from './command/new'
 import { command as versionCommand } from './command/version'
@@ -18,6 +14,10 @@ import { command as upCommand } from './command/up'
 import { command as downCommand } from './command/down'
 import { Config } from '../config'
 import { Command } from './command'
+import {
+  IConnectionManager,
+  IPersistenceFacade
+} from '@database-revisions/types'
 
 const printUsage = (): void => {
   console.log('Usage: migrate [new|version|list|up|down|help]')

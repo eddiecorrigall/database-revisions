@@ -1,12 +1,14 @@
 import { basename } from 'path'
 
 import {
-  IConnectionManager,
-  IPersistenceFacade,
   MigrationService
 } from '../../service'
 import { Config } from '../../config'
 import { Command } from '.'
+import {
+  IConnectionManager,
+  IPersistenceFacade
+} from '@database-revisions/types'
 
 export const command: Command = async (
   config: Config,

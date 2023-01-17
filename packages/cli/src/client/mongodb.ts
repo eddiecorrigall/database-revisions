@@ -1,7 +1,7 @@
+import { IConnectionManager } from '@database-revisions/types'
 import mongoose, { ClientSession, Connection } from 'mongoose'
 
 import { getLogger, ILogger } from '../lib/logger'
-import { IConnectionManager } from '../service'
 
 export interface Client {
   connection: Connection

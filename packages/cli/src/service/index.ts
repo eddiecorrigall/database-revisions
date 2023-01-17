@@ -1,7 +1,7 @@
 import { writeFileSync } from 'fs'
 import { join as pathJoin } from 'path'
 
-import { IRevision } from '@database-revisions/types'
+import { IPersistenceFacade, IRevision } from '@database-revisions/types'
 
 import { getLogger, ILogger } from '../lib/logger'
 import {
@@ -21,41 +21,6 @@ import {
 } from '../revision'
 
 export class MigrationServiceError extends Error {}
-
-export interface IConnectionManager<Client> {
-  shutdown: () => Promise<void>
-  ping: () => Promise<void>
-  transaction: <Data>(
-    callback: (client: Client) => Promise<Data | undefined>
-  ) => Promise<Data | undefined>
-}
-
-export interface IPersistenceFacade<Client> {
-  // Implement a PostgreSQL or MongoDB persistence facade to manage state
-
-  // (Idempotent) Create a table / document to persist state
-  initialize: (client: Client) => Promise<void>
-
-  // Manage access to resource such that reads are concurrent but not writes
-  acquireExclusiveLock: (client: Client) => Promise<void>
-  releaseExclusiveLock: (client: Client) => Promise<void>
-
-  // (Idempotent) Get the current version for the given namespace
-  fetchCurrentRevision: (
-    client: Client,
-    namespace: string
-  ) => Promise<IRevision | undefined>
-
-  // (Idempotent) Set the current version for the given namespace
-  setCurrentRevision: (
-    client: Client,
-    namespace: string,
-    revision: IRevision
-  ) => Promise<void>
-
-  // Remove the namespace (and the revision from persistence)
-  removeNamespace: (client: Client, namespace: string) => Promise<void>
-}
 
 export interface IMigrationService<Client> {
   newRevision: (
