@@ -1,9 +1,9 @@
-DB Revisions
+db revisions
 ============
 
 [![Build Status](https://github.com/eddiecorrigall/db-revisions/actions/workflows/main.yml/badge.svg)](https://github.com/eddiecorrigall/db-revisions/actions/workflows/main.yml)
 
-Written in JavaScript, DB (Database) Revisions is a lightweight database migration tool for usage with SQL and no-SQL databases such as MongoDB and PostgreSQL.
+Written in JavaScript, db (Database) revisions is a lightweight database migration tool for usage with SQL and no-SQL databases such as MongoDB and PostgreSQL.
 
 ## Goals
 - Revision immutability for reproducible database migrations
@@ -38,7 +38,14 @@ Please note the following requirements:
 npm install -g db-revisions
 ```
 
-### Perform Database Migrations Against Demo Database
+OR
+
+```bash
+# Setup a temporary alias to the cli package
+alias db="node ./packages/cli"
+```
+
+### Setup Demo Environment
 
 ```bash
 # Provision a local test database
@@ -46,15 +53,19 @@ docker compose up postgresql
 
 # Source environment variables for db connection and tool 
 source ./demo/postgresql/env.bash
+```
 
+### Perform Database Migration
+
+```bash
 # List all revisions
-revisions list
+db list
 
 # Upgrade all pending revisions
-revisions up
+db up
 
 # Show current version
-revisions version
+db version
 ```
 
 ### Inspect Changes to Demo Database
@@ -118,8 +129,8 @@ With these properties, it is easy to see how one can detect change, and support 
 To get a better understanding of database migrations, please first review concepts [DDL, DML and DCL](https://www.w3schools.in/mysql/ddl-dml-dcl/).
 
 1. In source control, create a folder to store `*.revision.js` files
-2. Configure the tool environment variables, see `revisions help`
-3. Create a new revision, eg. `revisions new 'my-first-revision'`, which automatically creates a template
+2. Configure the tool environment variables, see `db help`
+3. Create a new revision, eg. `db new 'my-first-revision'`, which automatically creates a template
 4. Edit the new revision file, adding a database query for `up()` and `down()`
-5. Apply the revision against a database `revisions up`
-6. Verify changes using `revisions version` and `revisions list`
+5. Apply the revision against a database `db up`
+6. Verify changes using `db version` and `db list`
