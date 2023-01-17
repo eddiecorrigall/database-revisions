@@ -1,5 +1,4 @@
-Node Revisions - Publishing
-==============
+# Publishing to npmjs.com
 
 These are notes to publish the project to the community.
 

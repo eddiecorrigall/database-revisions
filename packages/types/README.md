@@ -1,4 +1,3 @@
-database-migrations/types
-=========================
+# @database-revisions/types
 
-Typing for database-revisions.
+Typing for @database-revisions project.

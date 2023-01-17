@@ -1,5 +1,4 @@
-database-revisions
-==================
+# @database-revisions
 
 [![Build Status](https://github.com/eddiecorrigall/database-revisions/actions/workflows/main.yml/badge.svg)](https://github.com/eddiecorrigall/database-revisions/actions/workflows/main.yml)
 
