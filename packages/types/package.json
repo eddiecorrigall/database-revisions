@@ -1,7 +1,7 @@
 {
   "private": false,
   "name": "@database-revisions/types",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "author": "Eddie Corrigall <eddiecorrigall@gmail.com>",
   "license": "MIT",
   "main": "src/index.ts",
@@ -15,8 +15,7 @@
     "clean": "rm -fr ./build",
     "build": "npx tsc"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "typescript": "^4.9.4"
   },
