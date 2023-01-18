@@ -11,7 +11,8 @@
   "scripts": {
     "lint": "npx eslint ./packages/*/src",
     "test": "mocha",
-    "rebuild": "./scripts/rebuild.sh"
+    "build": "./scripts/build.sh",
+    "clean": "./scripts/clean.sh"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.1",
