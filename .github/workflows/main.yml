@@ -17,6 +17,8 @@ jobs:
       - run: npm audit --audit-level low && npm install && npm run build
         working-directory: packages/types
       - run: npm audit --audit-level low && npm install && npm run build
+        working-directory: packages/mongodb
+      - run: npm audit --audit-level low && npm install && npm run build
         working-directory: packages/cli
       - run: npm install
       - run: npm run test
