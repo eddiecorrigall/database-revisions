@@ -4,14 +4,13 @@ import {
 import { Config } from '../../config'
 import { Command } from '.'
 import {
-  IConnectionManager,
-  IPersistenceFacade
+  IConnectionManager, IStateManager
 } from '@database-revisions/types'
 
 export const command: Command = async (
   config: Config,
   db: IConnectionManager<unknown>,
-  dao: IPersistenceFacade<unknown>,
+  state: IStateManager<unknown>,
   service: MigrationService<unknown>,
   ...args: string[]
 ): Promise<void> => {

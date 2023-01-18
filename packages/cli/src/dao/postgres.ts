@@ -1,7 +1,7 @@
 import {
   ILogger,
-  IPersistenceFacade,
-  IRevision
+  IRevision,
+  IStateManager
 } from '@database-revisions/types'
 
 import { Client } from '../client/postgres'
@@ -22,7 +22,7 @@ const COLUMN_NAME_FILE = 'file'
 const COLUMN_NAME_CREATED_AT = 'created_at'
 const COLUMN_NAME_UPDATED_AT = 'updated_at'
 
-export class PostgreSQLPersistence implements IPersistenceFacade<Client> {
+export class PostgreSQLPersistence implements IStateManager<Client> {
   private readonly logger
 
   constructor (options: { logger?: ILogger }) {

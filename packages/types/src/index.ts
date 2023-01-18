@@ -34,7 +34,7 @@ export interface IConnectionManager<Client> {
   ) => Promise<Data | undefined>
 }
 
-export interface IPersistenceFacade<Client> {
+export interface IStateManager<Client> {
   // Implement a persistence facade to manage state in a database
 
   // (Idempotent) Create a table / document to persist state

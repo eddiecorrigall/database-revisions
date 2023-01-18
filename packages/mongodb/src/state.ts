@@ -2,8 +2,8 @@ import { Connection, Model, Schema } from 'mongoose'
 
 import {
   ILogger,
-  IPersistenceFacade,
-  IRevision
+  IRevision,
+  IStateManager
 } from '@database-revisions/types'
 
 import { Client } from './client'
@@ -68,7 +68,7 @@ export type MigrationsModel = Model<{
   [PROPERTY_NAME_UPDATED_AT]: Date
 }>
 
-export class MongoDBPersistence implements IPersistenceFacade<Client> {
+export class MongoDBPersistence implements IStateManager<Client> {
   private readonly logger
 
   public createMigrationsModel (connection: Connection): MigrationsModel {

@@ -3,8 +3,8 @@ import { join as pathJoin } from 'path'
 
 import {
   ILogger,
-  IPersistenceFacade,
-  IRevision
+  IRevision,
+  IStateManager
 } from '@database-revisions/types'
 
 import { getLogger } from '../lib/logger'
@@ -45,15 +45,15 @@ export interface IMigrationService<Client> {
 }
 
 export class MigrationService<Client> implements IMigrationService<Client> {
-  private readonly dao: IPersistenceFacade<Client>
+  private readonly state: IStateManager<Client>
 
   private readonly logger: ILogger
 
   constructor (options: {
-    dao: IPersistenceFacade<Client>
+    state: IStateManager<Client>
     logger?: ILogger
   }) {
-    this.dao = options.dao
+    this.state = options.state
     this.logger = options.logger ?? getLogger(MigrationService.name)
   }
 
@@ -61,7 +61,7 @@ export class MigrationService<Client> implements IMigrationService<Client> {
     client: Client,
     request: FetchRevisionRequest
   ): Promise<IRevision | undefined> {
-    return await this.dao.fetchCurrentRevision(client, request.namespace)
+    return await this.state.fetchCurrentRevision(client, request.namespace)
   }
 
   public async newRevision (
@@ -132,7 +132,7 @@ export class MigrationService<Client> implements IMigrationService<Client> {
       const finalRevision = pendingRevisionModules[
         pendingRevisionModules.length - 1
       ]
-      await this.dao.setCurrentRevision(
+      await this.state.setCurrentRevision(
         client,
         request.namespace,
         finalRevision
@@ -165,11 +165,12 @@ export class MigrationService<Client> implements IMigrationService<Client> {
     await down(client)
 
     if (finalRevision === undefined) {
-      await this.dao.removeNamespace(client, request.namespace)
+      await this.state.removeNamespace(client, request.namespace)
       return downgradePath
     }
 
-    await this.dao.setCurrentRevision(client, request.namespace, finalRevision)
+    await this.state.setCurrentRevision(
+      client, request.namespace, finalRevision)
 
     return downgradePath
   }

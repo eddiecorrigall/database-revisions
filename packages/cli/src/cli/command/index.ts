@@ -1,6 +1,5 @@
 import {
-  IConnectionManager,
-  IPersistenceFacade
+  IConnectionManager, IStateManager
 } from '@database-revisions/types'
 import { Config } from '../../config'
 import {
@@ -10,7 +9,7 @@ import {
 export type Command = (
   config: Config,
   db: IConnectionManager<unknown>,
-  dao: IPersistenceFacade<unknown>,
+  state: IStateManager<unknown>,
   service: MigrationService<unknown>,
   ...args: string[]
 ) => Promise<void>

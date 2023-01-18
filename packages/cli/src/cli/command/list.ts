@@ -2,8 +2,8 @@ import { basename } from 'path'
 
 import {
   IConnectionManager,
-  IPersistenceFacade,
-  IRevision
+  IRevision,
+  IStateManager
 } from '@database-revisions/types'
 
 import {
@@ -16,14 +16,14 @@ import { loadDirectory } from '../../revision'
 export const command: Command = async (
   config: Config,
   db: IConnectionManager<unknown>,
-  dao: IPersistenceFacade<unknown>,
+  state: IStateManager<unknown>,
   service: MigrationService<unknown>,
   ...args: string[]
 ): Promise<void> => {
   console.log('Listing revisions...')
   let currentRevision: IRevision | undefined
   await db.transaction(async (client: unknown) => {
-    await dao.initialize(client)
+    await state.initialize(client)
     currentRevision = await service.fetchCurrentRevision(client, {
       namespace: config.revisionsNamespace
     })

@@ -13,8 +13,7 @@ import { command as downCommand } from './command/down'
 import { Config } from '../config'
 import { Command } from './command'
 import {
-  IConnectionManager,
-  IPersistenceFacade
+  IConnectionManager, IStateManager
 } from '@database-revisions/types'
 
 const printUsage = (): void => {
@@ -71,7 +70,7 @@ const main = async (): Promise<void> => {
   const logger = getLogger('CLI')
   // Load connection manager and persistent facade
   let db: IConnectionManager<unknown>
-  let dao: IPersistenceFacade<any>
+  let state: IStateManager<any>
   switch (config.clientModule) {
     case 'mongodb': {
       const {
@@ -80,12 +79,12 @@ const main = async (): Promise<void> => {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       } = require('@database-revisions/mongodb')
       db = getConnectionManager({ logger })
-      dao = getStateManager({ logger })
+      state = getStateManager({ logger })
     } break
     case 'postgresql': {
       const pool = PostgreSQLConnectionManager.createPool()
       db = new PostgreSQLConnectionManager(pool, { logger })
-      dao = new PostgreSQLPersistence({ logger })
+      state = new PostgreSQLPersistence({ logger })
     } break
     default: {
       throw new Error(`unknown client ${config.clientModule}`)
@@ -94,8 +93,8 @@ const main = async (): Promise<void> => {
   process.on('exit', () => {
     void db.shutdown()
   })
-  const service = new MigrationService({ dao, logger })
-  await command(config, db, dao, service, ...args)
+  const service = new MigrationService({ state, logger })
+  await command(config, db, state, service, ...args)
 }
 
 const onSuccess = (): void => {

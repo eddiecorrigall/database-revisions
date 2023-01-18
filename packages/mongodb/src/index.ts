@@ -1,7 +1,7 @@
 import {
   IConnectionManager,
   ILogger,
-  IPersistenceFacade
+  IStateManager
 } from '@database-revisions/types'
 import { Client, MongoDBConnectionManager } from './client'
 import { MongoDBPersistence } from './state'
@@ -14,6 +14,6 @@ export const getConnectionManager = (args: {
 
 export const getStateManager = (args: {
   logger: ILogger
-}): IPersistenceFacade<Client> => {
+}): IStateManager<Client> => {
   return new MongoDBPersistence(args)
 }

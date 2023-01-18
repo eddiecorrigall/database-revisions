@@ -6,22 +6,21 @@ import {
 import { Config } from '../../config'
 import { Command } from '.'
 import {
-  IConnectionManager,
-  IPersistenceFacade
+  IConnectionManager, IStateManager
 } from '@database-revisions/types'
 
 export const command: Command = async (
   config: Config,
   db: IConnectionManager<unknown>,
-  dao: IPersistenceFacade<unknown>,
+  state: IStateManager<unknown>,
   service: MigrationService<unknown>,
   ...args: string[]
 ): Promise<void> => {
   console.log('Downgrading database...')
   await db.transaction(async (client: unknown) => {
-    await dao.initialize(client)
+    await state.initialize(client)
     // Lock all concurrent writes, but allow concurrent reads
-    await dao.acquireExclusiveLock(client)
+    await state.acquireExclusiveLock(client)
     // Revert current revision
     const {
       finalRevision,
@@ -53,6 +52,6 @@ export const command: Command = async (
       )
     }
     // Unlock resource
-    await dao.releaseExclusiveLock(client)
+    await state.releaseExclusiveLock(client)
   })
 }
