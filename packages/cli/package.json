@@ -35,8 +35,8 @@
     "build": "npx tsc --project ./tsconfig.build.json"
   },
   "dependencies": {
+    "@database-revisions/mongodb": "files:.../types",
     "bunyan": "^1.8.15",
-    "mongoose": "^6.8.2",
     "pg": "^8.8.0"
   },
   "devDependencies": {

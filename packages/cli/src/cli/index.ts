@@ -1,9 +1,7 @@
 import { expectEnv } from '../lib/env'
 import { getLogger } from '../lib/logger'
-import { MongoDBConnectionManager } from '../client/mongodb'
 
 import { PostgreSQLConnectionManager } from '../client/postgres'
-import { MongoDBPersistence } from '../dao/mongodb'
 import { PostgreSQLPersistence } from '../dao/postgres'
 import { MigrationService } from '../service'
 
@@ -76,10 +74,13 @@ const main = async (): Promise<void> => {
   let dao: IPersistenceFacade<any>
   switch (config.clientModule) {
     case 'mongodb': {
-      const uri = expectEnv('MONGODB_URI')
-      const connection = MongoDBConnectionManager.createConnection(uri)
-      db = new MongoDBConnectionManager(connection, { logger })
-      dao = new MongoDBPersistence({ logger })
+      const {
+        getConnectionManager,
+        getStateManager
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      } = require('@database-revisions/mongodb')
+      db = getConnectionManager({ logger })
+      dao = getStateManager({ logger })
     } break
     case 'postgresql': {
       const pool = PostgreSQLConnectionManager.createPool()

@@ -1,15 +1,8 @@
 import bunyan from 'bunyan'
 
+import { ILogger } from '@database-revisions/types'
+
 const LOG_LEVEL = (process.env.LOG_LEVEL ?? 'error') as bunyan.LogLevelString
-
-type LogFunction = (message: string, payload?: Record<string, unknown>) => void
-
-export interface ILogger {
-  debug: LogFunction
-  info: LogFunction
-  warn: LogFunction
-  error: LogFunction
-}
 
 let loggerInstance: ILogger
 

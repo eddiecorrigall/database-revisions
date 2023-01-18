@@ -1,22 +1,28 @@
-import { IConnectionManager } from '@database-revisions/types'
+import { IConnectionManager, ILogger } from '@database-revisions/types'
 import mongoose, { ClientSession, Connection } from 'mongoose'
-
-import { getLogger, ILogger } from '../lib/logger'
 
 export interface Client {
   connection: Connection
   session: ClientSession
 }
 
+const getUri = (): string => {
+  const uri = process.env.MONGODB_URI
+  if (uri === undefined) {
+    throw new Error('environment variable missing MONGODB_URI')
+  }
+  return uri
+}
+
 export class MongoDBConnectionManager
 implements IConnectionManager<Client> {
-  private readonly connection: Connection
-
   private readonly logger: ILogger
 
-  constructor (connection: Connection, options?: { logger?: ILogger }) {
-    this.connection = connection
-    this.logger = options?.logger ?? getLogger(MongoDBConnectionManager.name)
+  private readonly connection: Connection
+
+  constructor (args: { logger: ILogger }) {
+    this.logger = args.logger
+    this.connection = mongoose.createConnection(getUri())
   }
 
   public async shutdown (): Promise<void> {
@@ -59,9 +65,5 @@ implements IConnectionManager<Client> {
       this.logger.debug('Ending transaction')
       await session.endSession()
     }
-  }
-
-  public static createConnection (uri: string): Connection {
-    return mongoose.createConnection(uri)
   }
 }

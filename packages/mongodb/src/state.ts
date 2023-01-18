@@ -1,11 +1,12 @@
-import { assert } from 'console'
 import { Connection, Model, Schema } from 'mongoose'
 
-import { IPersistenceFacade, IRevision } from '@database-revisions/types'
+import {
+  ILogger,
+  IPersistenceFacade,
+  IRevision
+} from '@database-revisions/types'
 
-import { Client } from '../client/mongodb'
-import { getLogger, ILogger } from '../lib/logger'
-import { MigrationServiceError } from '../service'
+import { Client } from './client'
 
 export const COLLECTION_NAME = 'migrations'
 
@@ -74,8 +75,8 @@ export class MongoDBPersistence implements IPersistenceFacade<Client> {
     return connection.model(COLLECTION_NAME, MigrationsSchema)
   }
 
-  constructor (options: { logger?: ILogger }) {
-    this.logger = options.logger ?? getLogger(MongoDBPersistence.name)
+  constructor (args: { logger: ILogger }) {
+    this.logger = args.logger
   }
 
   public async initialize (
@@ -134,7 +135,7 @@ export class MongoDBPersistence implements IPersistenceFacade<Client> {
         return revision
       }
       default: {
-        throw new MigrationServiceError(
+        throw new Error(
           'MongoDB migration service found multiple revisions with the ' +
           'same namespace'
         )
@@ -148,7 +149,9 @@ export class MongoDBPersistence implements IPersistenceFacade<Client> {
     revision: IRevision
   ): Promise<void> {
     this.logger.info('Set MongoDB revision', { namespace, revision })
-    assert(client.session.inTransaction())
+    if (!client.session.inTransaction()) {
+      throw new Error('cannot set current revision - no transaction')
+    }
     const MigrationsModel = this.createMigrationsModel(client.connection)
     const document = await MigrationsModel.findOneAndUpdate(
       {
@@ -174,7 +177,9 @@ export class MongoDBPersistence implements IPersistenceFacade<Client> {
     client: Client,
     namespace: string
   ): Promise<void> {
-    assert(client.session.inTransaction())
+    if (!client.session.inTransaction()) {
+      throw new Error('cannot remove namespace - no transaction')
+    }
     const MigrationsModel = this.createMigrationsModel(client.connection)
     await MigrationsModel.findOneAndRemove({
       [PROPERTY_NAME_NAMESPACE]: namespace

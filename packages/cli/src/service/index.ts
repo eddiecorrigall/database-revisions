@@ -1,9 +1,13 @@
 import { writeFileSync } from 'fs'
 import { join as pathJoin } from 'path'
 
-import { IPersistenceFacade, IRevision } from '@database-revisions/types'
+import {
+  ILogger,
+  IPersistenceFacade,
+  IRevision
+} from '@database-revisions/types'
 
-import { getLogger, ILogger } from '../lib/logger'
+import { getLogger } from '../lib/logger'
 import {
   DowngradePath,
   DowngradeRequest,

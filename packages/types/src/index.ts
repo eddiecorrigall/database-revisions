@@ -1,3 +1,12 @@
+type LogFunction = (message: string, payload?: Record<string, unknown>) => void
+
+export interface ILogger {
+  debug: LogFunction
+  info: LogFunction
+  warn: LogFunction
+  error: LogFunction
+}
+
 export interface IRevision {
   readonly file: string
   readonly version: string

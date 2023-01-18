@@ -11,7 +11,8 @@
     "ecmaVersion": "latest",
     "project": [
       "./packages/cli/tsconfig.json",
-      "./packages/types/tsconfig.json"
+      "./packages/types/tsconfig.json",
+      "./packages/mongodb/tsconfig.json"
     ]
   },
   "rules": {
