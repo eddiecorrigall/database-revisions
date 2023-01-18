@@ -2,9 +2,6 @@ import { IConnectionManager, ILogger } from '@database-revisions/types'
 import { readFileSync } from 'fs'
 import { Pool, PoolClient, PoolConfig } from 'pg'
 
-import { expectEnv } from '../lib/env'
-import { getLogger } from '../lib/logger'
-
 /* References:
  * - https://node-postgres.com/features/ssl
  * - https://www.postgresql.org/docs/9.3/libpq-envars.html
@@ -12,18 +9,25 @@ import { getLogger } from '../lib/logger'
 
 export type Client = PoolClient
 
+export const expectEnv = (name: string): string => {
+  const value = process.env[name]
+  if (value === undefined) {
+    throw new Error(`environment variable missing - ${name}`)
+  }
+  return value
+}
+
 export class PostgreSQLConnectionManager
 implements IConnectionManager<Client> {
   private readonly pool: Pool
 
   private readonly logger: ILogger
 
-  constructor (
-    pool: Pool,
-    options?: { config?: PoolConfig, logger?: ILogger }
-  ) {
-    this.pool = pool
-    this.logger = options?.logger ?? getLogger(PostgreSQLConnectionManager.name)
+  constructor (args: {
+    logger: ILogger
+  }) {
+    this.logger = args.logger
+    this.pool = PostgreSQLConnectionManager.createPool()
   }
 
   public async connect (): Promise<Client> {

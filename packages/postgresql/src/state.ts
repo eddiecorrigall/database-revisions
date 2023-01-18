@@ -4,11 +4,7 @@ import {
   IStateManager
 } from '@database-revisions/types'
 
-import { Client } from '../client/postgres'
-import { getLogger } from '../lib/logger'
-import {
-  MigrationServiceError
-} from '../service'
+import { Client } from './client'
 
 const TABLE_NAME_MIGRATIONS = 'migrations'
 
@@ -22,11 +18,11 @@ const COLUMN_NAME_FILE = 'file'
 const COLUMN_NAME_CREATED_AT = 'created_at'
 const COLUMN_NAME_UPDATED_AT = 'updated_at'
 
-export class PostgreSQLPersistence implements IStateManager<Client> {
-  private readonly logger
+export class PostgreSQLStateManager implements IStateManager<Client> {
+  private readonly logger: ILogger
 
-  constructor (options: { logger?: ILogger }) {
-    this.logger = options.logger ?? getLogger(PostgreSQLPersistence.name)
+  constructor (args: { logger: ILogger }) {
+    this.logger = args.logger
   }
 
   public async initialize (client: Client): Promise<void> {
@@ -94,7 +90,7 @@ export class PostgreSQLPersistence implements IStateManager<Client> {
         return revision
       }
       default: {
-        throw new MigrationServiceError(
+        throw new Error(
           'PostgreSQL migration service found multiple revisions with the ' +
           'same namespace'
         )

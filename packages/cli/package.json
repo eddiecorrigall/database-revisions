@@ -18,7 +18,7 @@
     "postgres",
     "devops"
   ],
-  "main": "build/cli/index.js",
+  "main": "./build/cli/index.js",
   "bin": {
     "db": "./bin/cli.js",
     "database-revisions": "./bin/cli.js",
@@ -35,14 +35,13 @@
     "build": "npx tsc --project ./tsconfig.build.json"
   },
   "dependencies": {
-    "@database-revisions/mongodb": "files:.../types",
-    "bunyan": "^1.8.15",
-    "pg": "^8.8.0"
+    "@database-revisions/mongodb": "file:../mongodb",
+    "@database-revisions/postgresql": "file:../postgresql",
+    "@database-revisions/types": "file:../types",
+    "bunyan": "^1.8.15"
   },
   "devDependencies": {
-    "@database-revisions/types": "file:../types",
     "@types/bunyan": "^1.8.8",
-    "@types/pg": "^8.6.6",
     "typescript": "^4.9.4"
   },
   "repository": {

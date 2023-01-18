@@ -1,4 +1,5 @@
 {
+  "name": "database-revisions",
   "private": true,
   "author": "Eddie Corrigall <eddiecorrigall@gmail.com>",
   "license": "MIT",
@@ -8,9 +9,9 @@
   },
   "type": "commonjs",
   "scripts": {
-    "preinstall": "npm audit --audit-level low",
     "lint": "npx eslint ./packages/*/src",
-    "test": "mocha"
+    "test": "mocha",
+    "rebuild": "./scripts/rebuild.sh"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.1",

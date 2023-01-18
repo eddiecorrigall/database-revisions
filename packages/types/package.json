@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "author": "Eddie Corrigall <eddiecorrigall@gmail.com>",
   "license": "MIT",
-  "main": "src/index.ts",
-  "types": "build/index.d.ts",
+  "main": "./src/index.ts",
+  "types": "./build/index.d.ts",
   "engine": {
     "npm": "8.19.2",
     "node": "16.18.1"

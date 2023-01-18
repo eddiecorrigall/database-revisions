@@ -1,8 +1,6 @@
 import { expectEnv } from '../lib/env'
 import { getLogger } from '../lib/logger'
 
-import { PostgreSQLConnectionManager } from '../client/postgres'
-import { PostgreSQLPersistence } from '../dao/postgres'
 import { MigrationService } from '../service'
 
 import { command as newCommand } from './command/new'
@@ -82,9 +80,13 @@ const main = async (): Promise<void> => {
       state = getStateManager({ logger })
     } break
     case 'postgresql': {
-      const pool = PostgreSQLConnectionManager.createPool()
-      db = new PostgreSQLConnectionManager(pool, { logger })
-      state = new PostgreSQLPersistence({ logger })
+      const {
+        getConnectionManager,
+        getStateManager
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      } = require('@database-revisions/postgresql')
+      db = getConnectionManager({ logger })
+      state = getStateManager({ logger })
     } break
     default: {
       throw new Error(`unknown client ${config.clientModule}`)
