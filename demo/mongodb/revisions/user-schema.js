@@ -15,8 +15,12 @@ const UserSchema = new Schema({
   }
 })
 
+let _model
 const createUserModel = (connection) => {
-  return connection.model('users', UserSchema)
+  if (_model === undefined) {
+    _model = connection.model('users', UserSchema)
+  }
+  return _model
 }
 
 module.exports = { UserSchema, createUserModel }
