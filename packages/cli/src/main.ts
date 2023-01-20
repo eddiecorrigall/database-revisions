@@ -8,6 +8,7 @@ import { command as versionCommand } from './command/version'
 import { command as listCommand } from './command/list'
 import { command as upCommand } from './command/up'
 import { command as downCommand } from './command/down'
+import { command as helpCommand, printUsage } from './command/help'
 import { Config, LocalCommand, RemoteCommand } from './types'
 import {
   IConnectionManager, IStateManager
@@ -15,23 +16,12 @@ import {
 import path from 'path'
 import { existsSync } from 'fs'
 
-const printUsage = (): void => {
-  // TODO: convert to LocalCommand
-  console.log('Usage: migrate [new|version|list|up|down|help]')
-  console.log('Environment variables:')
-  console.log('  REVISIONS_CONFIG - absolute path to database-revisions config')
-}
-
-const loadLocalCommand = (commandName: string): LocalCommand => {
+const loadLocalCommand = (commandName: string): LocalCommand | undefined => {
   const command: LocalCommand | undefined = {
     init: initCommand,
     new: newCommand,
-    help: printUsage as any
+    help: helpCommand
   }[commandName.toLowerCase()]
-  if (command === undefined) {
-    printUsage()
-    throw new Error('unknown command')
-  }
   return command
 }
 
@@ -84,6 +74,9 @@ export const main = async (): Promise<void> => {
     await remoteCommand(config, db, state, service, ...args)
   } else {
     const localCommand = loadLocalCommand(commandName)
+    if (localCommand === undefined) {
+      throw new Error('unknown command')
+    }
     await localCommand(config, ...args)
   }
 }
