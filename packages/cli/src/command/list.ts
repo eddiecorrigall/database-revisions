@@ -6,12 +6,9 @@ import {
   IStateManager
 } from '@database-revisions/types'
 
-import {
-  MigrationService
-} from '../../service'
-import { Config } from '../../config'
-import { RemoteCommand } from '../command-types'
-import { loadDirectory } from '../../revision'
+import { MigrationService } from '../service/migration'
+import { Config, RemoteCommand } from '../types'
+import { loadDirectory } from '../revision'
 
 export const command: RemoteCommand = async (
   config: Config,

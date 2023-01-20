@@ -17,23 +17,7 @@ import {
   resolveDowngradePath,
   resolveUpgradePath
 } from '../revision'
-
-export class MigrationServiceError extends Error {}
-
-export interface IMigrationService<Client> {
-  fetchCurrentRevision: (
-    client: Client,
-    request: FetchRevisionRequest
-  ) => Promise<IRevision | undefined>
-  upgrade: (
-    client: Client,
-    request: UpgradeRequest
-  ) => Promise<UpgradePath>
-  downgrade: (
-    client: Client,
-    request: DowngradeRequest,
-  ) => Promise<DowngradePath>
-}
+import { IMigrationService } from '../types'
 
 export class MigrationService<Client> implements IMigrationService<Client> {
   private readonly state: IStateManager<Client>

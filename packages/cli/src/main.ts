@@ -1,6 +1,6 @@
-import { getLogger } from '../lib/logger'
+import { getLogger } from './lib/logger'
 
-import { MigrationService } from '../service'
+import { MigrationService } from './service/migration'
 
 import { command as initCommand } from './command/init'
 import { command as newCommand } from './command/new'
@@ -8,33 +8,15 @@ import { command as versionCommand } from './command/version'
 import { command as listCommand } from './command/list'
 import { command as upCommand } from './command/up'
 import { command as downCommand } from './command/down'
-import { Config } from '../config'
-import { LocalCommand, RemoteCommand } from './command-types'
+import { Config, LocalCommand, RemoteCommand } from './types'
 import {
   IConnectionManager, IStateManager
 } from '@database-revisions/types'
 import path from 'path'
 import { existsSync } from 'fs'
 
-export const REVISIONS_MODULES: Array<{
-  databaseName: string
-  moduleName: string
-}> = [
-  {
-    databaseName: 'PostgreSQL',
-    moduleName: '@database-revisions/postgresql'
-  },
-  {
-    databaseName: 'MongoDB',
-    moduleName: '@database-revisions/mongodb'
-  }
-]
-
-export const DEFAULT_REVISIONS_CONFIG = './revisions.config.js'
-export const DEFAULT_REVISIONS_DIRECTORY = './revisions'
-export const DEFAULT_REVISIONS_MODULE = REVISIONS_MODULES[0].moduleName
-
 const printUsage = (): void => {
+  // TODO: convert to LocalCommand
   console.log('Usage: migrate [new|version|list|up|down|help]')
   console.log('Environment variables:')
   console.log('  REVISIONS_CONFIG - absolute path to database-revisions config')
@@ -73,7 +55,7 @@ const loadConfig = (): Config | undefined => {
   }
 }
 
-const main = async (): Promise<void> => {
+export const main = async (): Promise<void> => {
   const args = process.argv.slice(2)
   if (args.length === 0) {
     printUsage()
@@ -105,19 +87,3 @@ const main = async (): Promise<void> => {
     await localCommand(config, ...args)
   }
 }
-
-const onSuccess = (): void => {
-  process.exit(0)
-}
-
-const onFailure = (reason?: string): void => {
-  if (reason !== undefined) {
-    console.error(reason)
-  }
-  process.exit(1)
-}
-
-main().then(
-  onSuccess,
-  onFailure
-)

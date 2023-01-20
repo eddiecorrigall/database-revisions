@@ -18,7 +18,7 @@
     "postgres",
     "devops"
   ],
-  "main": "./build/cli/index.js",
+  "main": "./build/index.js",
   "bin": {
     "db": "./bin/cli.js",
     "database-revisions": "./bin/cli.js",

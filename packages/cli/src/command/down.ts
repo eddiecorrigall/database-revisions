@@ -1,10 +1,7 @@
 import { basename } from 'path'
 
-import {
-  MigrationService
-} from '../../service'
-import { Config } from '../../config'
-import { RemoteCommand } from '../command-types'
+import { MigrationService } from '../service/migration'
+import { Config, RemoteCommand } from '../types'
 import {
   IConnectionManager, IStateManager
 } from '@database-revisions/types'

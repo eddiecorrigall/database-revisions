@@ -1,7 +1,6 @@
-import { LocalCommand } from '../command-types'
-import { DEFAULT_REVISIONS_DIRECTORY } from '..'
-import { Config } from '../../config'
-import { newRevision } from '../../revision'
+import { Config, LocalCommand } from '../types'
+import { DEFAULT_REVISIONS_DIRECTORY } from '../constants'
+import { newRevision } from '../revision'
 
 export const command: LocalCommand = async (
   config: Config | undefined,

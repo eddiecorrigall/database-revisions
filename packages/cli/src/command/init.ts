@@ -1,11 +1,10 @@
-import prompts from 'prompts'
-
 import { writeFileSync } from 'fs'
 import path from 'path'
 
-import { Config } from '../../config'
-import { LocalCommand } from '../command-types'
-import { REVISIONS_MODULES } from '..'
+import prompts from 'prompts'
+
+import { REVISIONS_MODULES } from '../constants'
+import { Config, LocalCommand } from '../types'
 
 export const command: LocalCommand = async (
   config: Config | undefined,
@@ -54,7 +53,6 @@ export const command: LocalCommand = async (
       name: 'connectionManagerModuleName',
       message: 'What connection manager will you be using?',
       choices: REVISIONS_MODULES.map(({
-        databaseName,
         moduleName
       }) => ({
         title: moduleName,
@@ -69,7 +67,6 @@ export const command: LocalCommand = async (
       name: 'stateManagerModuleName',
       message: 'What state manager will you be using?',
       choices: REVISIONS_MODULES.map(({
-        databaseName,
         moduleName
       }) => ({
         title: moduleName,
