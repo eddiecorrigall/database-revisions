@@ -10,11 +10,6 @@ export interface DowngradePath {
   pendingRevisionModules: IRevisionModule[]
 }
 
-export interface NewRevisionRequest {
-  directory: string
-  description: string
-}
-
 export interface FetchRevisionRequest {
   namespace: string
 }

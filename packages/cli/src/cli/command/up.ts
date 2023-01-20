@@ -4,12 +4,12 @@ import {
   MigrationService
 } from '../../service'
 import { Config } from '../../config'
-import { Command } from '.'
+import { RemoteCommand } from '.'
 import {
   IConnectionManager, IStateManager
 } from '@database-revisions/types'
 
-export const command: Command = async (
+export const command: RemoteCommand = async (
   config: Config,
   db: IConnectionManager<unknown>,
   state: IStateManager<unknown>,

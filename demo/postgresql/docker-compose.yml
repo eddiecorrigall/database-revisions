@@ -15,14 +15,3 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-
-  mongodb:
-    image: mongo
-    expose:
-      - '27017'
-    ports:
-      - '27017:27017'
-    command: --replSet mongodb-replica-set --config /etc/mongo/mongod.conf
-    volumes:
-      - './docker/mongodb/mongod.conf:/etc/mongo/mongod.conf:ro'
-      - './docker/mongodb/setup-replica-set.js:/docker-entrypoint-initdb.d/setup-replica-set.js:ro'

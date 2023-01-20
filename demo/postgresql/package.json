@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "dependencies": {
+    "@database-revisions/cli": "file:../../packages/cli",
+    "@database-revisions/postgresql": "file:../../packages/postgresql"
+  }
+}

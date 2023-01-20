@@ -1,17 +1,10 @@
-import {
-  MigrationService
-} from '../../service'
+import { LocalCommand } from '.'
+import { DEFAULT_REVISIONS_DIRECTORY } from '..'
 import { Config } from '../../config'
-import { Command } from '.'
-import {
-  IConnectionManager, IStateManager
-} from '@database-revisions/types'
+import { newRevision } from '../../revision'
 
-export const command: Command = async (
-  config: Config,
-  db: IConnectionManager<unknown>,
-  state: IStateManager<unknown>,
-  service: MigrationService<unknown>,
+export const command: LocalCommand = async (
+  config: Config | undefined,
   ...args: string[]
 ): Promise<void> => {
   console.log('New revision...')
@@ -20,8 +13,8 @@ export const command: Command = async (
   if (description === undefined) {
     throw new Error('missing description')
   }
-  const revisionFile: string = await service.newRevision({
-    directory: config.revisionsDirectory,
+  const revisionFile: string = await newRevision({
+    directory: config?.revisionsDirectory ?? DEFAULT_REVISIONS_DIRECTORY,
     description
   })
   console.log(`file: ${revisionFile}`)

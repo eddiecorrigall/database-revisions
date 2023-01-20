@@ -1,6 +1,3 @@
-import { writeFileSync } from 'fs'
-import { join as pathJoin } from 'path'
-
 import {
   ILogger,
   IRevision,
@@ -12,13 +9,10 @@ import {
   DowngradePath,
   DowngradeRequest,
   FetchRevisionRequest,
-  NewRevisionRequest,
   UpgradePath,
   UpgradeRequest
 } from './request'
 import {
-  generateFileContent,
-  generateFileName,
   loadDirectory,
   resolveDowngradePath,
   resolveUpgradePath
@@ -27,9 +21,6 @@ import {
 export class MigrationServiceError extends Error {}
 
 export interface IMigrationService<Client> {
-  newRevision: (
-    request: NewRevisionRequest
-  ) => Promise<string>
   fetchCurrentRevision: (
     client: Client,
     request: FetchRevisionRequest
@@ -62,32 +53,6 @@ export class MigrationService<Client> implements IMigrationService<Client> {
     request: FetchRevisionRequest
   ): Promise<IRevision | undefined> {
     return await this.state.fetchCurrentRevision(client, request.namespace)
-  }
-
-  public async newRevision (
-    request: NewRevisionRequest
-  ): Promise<string> {
-    const untrustedRevisionModules = loadDirectory(request.directory)
-    let latestVersion
-    if (untrustedRevisionModules.length > 0) {
-      const {
-        pendingRevisionModules
-      } = resolveUpgradePath(untrustedRevisionModules, undefined)
-      const latestRevisionModule = pendingRevisionModules[
-        pendingRevisionModules.length - 1
-      ]
-      latestVersion = latestRevisionModule.version
-    }
-
-    const filePath = pathJoin(
-      request.directory,
-      generateFileName(request.description)
-    )
-    const fileContent = generateFileContent(latestVersion)
-
-    writeFileSync(filePath, fileContent)
-
-    return filePath
   }
 
   public async upgrade (

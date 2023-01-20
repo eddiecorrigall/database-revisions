@@ -1,10 +1,37 @@
-import { readdirSync } from 'fs'
+import { readdirSync, writeFileSync } from 'fs'
 import { join as pathJoin } from 'path'
 
 import { IRevision, IRevisionModule } from '@database-revisions/types'
 
 import { hash, hashFile } from './lib/hash'
 import { DowngradePath, UpgradePath } from './service/request'
+
+export const newRevision = async (args: {
+  directory: string
+  description: string
+}): Promise<string> => {
+  const untrustedRevisionModules = loadDirectory(args.directory)
+  let latestVersion
+  if (untrustedRevisionModules.length > 0) {
+    const {
+      pendingRevisionModules
+    } = resolveUpgradePath(untrustedRevisionModules, undefined)
+    const latestRevisionModule = pendingRevisionModules[
+      pendingRevisionModules.length - 1
+    ]
+    latestVersion = latestRevisionModule.version
+  }
+
+  const filePath = pathJoin(
+    args.directory,
+    generateFileName(args.description)
+  )
+  const fileContent = generateFileContent(latestVersion)
+
+  writeFileSync(filePath, fileContent)
+
+  return filePath
+}
 
 export const computeVersion = (
   previousVersion: string | undefined,

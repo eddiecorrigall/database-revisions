@@ -30,28 +30,42 @@ Please note the following requirements:
 - `npm` to manage NodeJS project including scripts and project dependencies
 - NodeJS project dependencies
 
-### Install Dependencies, Build and Link Project
+### Installation
 
 ```bash
-# Install command-line tool globally
-npm install -g @database-revisions/cli
+# Create new project folder
+mkdir my-project
+
+# Setup a node project
+npm init
+
+# Install packages
+npm install @database-revisions/cli
+npm install @database-revisions/postgres
+
+# Configure CLI tool
+npx db init
 ```
 
-OR
+### Demos
 
-```bash
-# Setup a temporary alias to the cli package
-alias db="node ./packages/cli"
-```
+First change directory into one of the demo folders listed below.
+- [PostgreSQL](./demo/postgresql)
+- [MongoDB](./demo/mongodb)
 
-### Setup Demo Environment
+Example: `cd ./demo/postgresql`
+
+Then, run the following commands.
 
 ```bash
 # Provision a local test database
-docker compose up postgresql
+docker compose up --detach
 
-# Source environment variables for db connection and tool 
-source ./demo/postgresql/env.bash
+# Source environment variables for db connection
+source ./env.bash
+
+# Install dependencies
+npm install
 ```
 
 ### Perform Database Migration
@@ -66,6 +80,7 @@ db up
 # Show current version
 db version
 ```
+
 
 ### Inspect Changes to Demo Database
 

@@ -6,7 +6,12 @@ import {
   MigrationService
 } from '../../service'
 
-export type Command = (
+export type LocalCommand = (
+  config: Config | undefined,
+  ...args: string[]
+) => Promise<void>
+
+export type RemoteCommand = (
   config: Config,
   db: IConnectionManager<unknown>,
   state: IStateManager<unknown>,

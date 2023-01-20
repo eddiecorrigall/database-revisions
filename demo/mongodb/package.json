@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "dependencies": {
+    "@database-revisions/cli": "file:../../packages/cli",
+    "@database-revisions/mongodb": "file:../../packages/mongodb",
+    "mongoose": "^6.8.4"
+  }
+}

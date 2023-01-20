@@ -10,10 +10,10 @@ import {
   MigrationService
 } from '../../service'
 import { Config } from '../../config'
-import { Command } from '.'
+import { RemoteCommand } from '.'
 import { loadDirectory } from '../../revision'
 
-export const command: Command = async (
+export const command: RemoteCommand = async (
   config: Config,
   db: IConnectionManager<unknown>,
   state: IStateManager<unknown>,
