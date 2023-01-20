@@ -1,10 +1,10 @@
 import {
   IConnectionManager, IStateManager
 } from '@database-revisions/types'
-import { Config } from '../../config'
+import { Config } from '../config'
 import {
   MigrationService
-} from '../../service'
+} from '../service'
 
 export type LocalCommand = (
   config: Config | undefined,

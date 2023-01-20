@@ -10,7 +10,7 @@ import {
   MigrationService
 } from '../../service'
 import { Config } from '../../config'
-import { RemoteCommand } from '.'
+import { RemoteCommand } from '../command-types'
 import { loadDirectory } from '../../revision'
 
 export const command: RemoteCommand = async (

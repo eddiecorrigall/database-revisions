@@ -4,7 +4,7 @@ import { writeFileSync } from 'fs'
 import path from 'path'
 
 import { Config } from '../../config'
-import { LocalCommand } from '.'
+import { LocalCommand } from '../command-types'
 import { REVISIONS_MODULES } from '..'
 
 export const command: LocalCommand = async (

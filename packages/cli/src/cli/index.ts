@@ -9,7 +9,7 @@ import { command as listCommand } from './command/list'
 import { command as upCommand } from './command/up'
 import { command as downCommand } from './command/down'
 import { Config } from '../config'
-import { LocalCommand, RemoteCommand } from './command'
+import { LocalCommand, RemoteCommand } from './command-types'
 import {
   IConnectionManager, IStateManager
 } from '@database-revisions/types'
