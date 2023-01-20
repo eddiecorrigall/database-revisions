@@ -6,7 +6,7 @@ export const printConfig = (config?: Config): void => {
 }
 
 export const printUsage = (): void => {
-  console.log('Usage: database-revisions [new|version|list|up|down|help]')
+  console.log('Usage: database-revisions [init|new|version|list|up|down|help]')
   console.log('Environment variables:')
   console.log('  REVISIONS_CONFIG - absolute path to database-revisions config')
 }
