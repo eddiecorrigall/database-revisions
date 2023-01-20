@@ -19,6 +19,7 @@ export const command: RemoteCommand = async (
 ): Promise<void> => {
   console.log('Fetching current revision...')
   printConfig(config)
+  console.log('---')
   let currentRevision: IRevision | undefined
   await db.transaction(async (client: unknown) => {
     await state.initialize(client)

@@ -16,6 +16,7 @@ export const command: RemoteCommand = async (
 ): Promise<void> => {
   console.log('Downgrading database...')
   printConfig(config)
+  console.log('---')
   await db.transaction(async (client: unknown) => {
     await state.initialize(client)
     // Lock all concurrent writes, but allow concurrent reads
