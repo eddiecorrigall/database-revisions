@@ -11,6 +11,8 @@ export const command: LocalCommand = async (
   ...args: string[]
 ): Promise<void> => {
   console.log('Initialize project...')
+  console.log(`namespace: ${config?.revisionsNamespace ?? ''}`)
+  console.log(`directory: ${config?.revisionsDirectory ?? ''}`)
   const filePath = path.resolve(
     process.cwd(),
     './revisions.config.js'

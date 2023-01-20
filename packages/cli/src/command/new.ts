@@ -7,6 +7,8 @@ export const command: LocalCommand = async (
   ...args: string[]
 ): Promise<void> => {
   console.log('New revision...')
+  console.log(`namespace: ${config?.revisionsNamespace ?? ''}`)
+  console.log(`directory: ${config?.revisionsDirectory ?? ''}`)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_commandName, description] = args
   if (description === undefined) {

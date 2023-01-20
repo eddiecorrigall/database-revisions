@@ -18,6 +18,8 @@ export const command: RemoteCommand = async (
   ...args: string[]
 ): Promise<void> => {
   console.log('Listing revisions...')
+  console.log(`namespace: ${config.revisionsNamespace}`)
+  console.log(`directory: ${config.revisionsDirectory}`)
   let currentRevision: IRevision | undefined
   await db.transaction(async (client: unknown) => {
     await state.initialize(client)
