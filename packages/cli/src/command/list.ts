@@ -9,6 +9,7 @@ import {
 import { MigrationService } from '../service/migration'
 import { Config, RemoteCommand } from '../types'
 import { loadDirectory } from '../revision'
+import { printConfig } from '../print'
 
 export const command: RemoteCommand = async (
   config: Config,
@@ -18,8 +19,7 @@ export const command: RemoteCommand = async (
   ...args: string[]
 ): Promise<void> => {
   console.log('Listing revisions...')
-  console.log(`namespace: ${config.revisionsNamespace}`)
-  console.log(`directory: ${config.revisionsDirectory}`)
+  printConfig(config)
   let currentRevision: IRevision | undefined
   await db.transaction(async (client: unknown) => {
     await state.initialize(client)

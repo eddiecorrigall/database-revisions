@@ -8,13 +8,14 @@ import { command as versionCommand } from './command/version'
 import { command as listCommand } from './command/list'
 import { command as upCommand } from './command/up'
 import { command as downCommand } from './command/down'
-import { command as helpCommand, printUsage } from './command/help'
+import { command as helpCommand } from './command/help'
 import { Config, LocalCommand, RemoteCommand } from './types'
 import {
   IConnectionManager, IStateManager
 } from '@database-revisions/types'
 import path from 'path'
 import { existsSync } from 'fs'
+import { printUsage } from './print'
 
 const loadLocalCommand = (commandName: string): LocalCommand | undefined => {
   const command: LocalCommand | undefined = {

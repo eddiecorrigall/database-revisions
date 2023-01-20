@@ -5,6 +5,7 @@ import { Config, RemoteCommand } from '../types'
 import {
   IConnectionManager, IStateManager
 } from '@database-revisions/types'
+import { printConfig } from '../print'
 
 export const command: RemoteCommand = async (
   config: Config,
@@ -14,8 +15,7 @@ export const command: RemoteCommand = async (
   ...args: string[]
 ): Promise<void> => {
   console.log('Upgrading database...')
-  console.log(`namespace: ${config.revisionsNamespace}`)
-  console.log(`directory: ${config.revisionsDirectory}`)
+  printConfig(config)
   await db.transaction(async (client: unknown) => {
     await state.initialize(client)
     // Lock all concurrent writes, but allow concurrent reads

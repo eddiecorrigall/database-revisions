@@ -4,6 +4,7 @@ import path from 'path'
 import prompts from 'prompts'
 
 import { REVISIONS_MODULES } from '../constants'
+import { printConfig } from '../print'
 import { Config, LocalCommand } from '../types'
 
 export const command: LocalCommand = async (
@@ -11,8 +12,7 @@ export const command: LocalCommand = async (
   ...args: string[]
 ): Promise<void> => {
   console.log('Initialize project...')
-  console.log(`namespace: ${config?.revisionsNamespace ?? ''}`)
-  console.log(`directory: ${config?.revisionsDirectory ?? ''}`)
+  printConfig(config)
   const filePath = path.resolve(
     process.cwd(),
     './revisions.config.js'
