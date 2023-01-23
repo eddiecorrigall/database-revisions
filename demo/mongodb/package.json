@@ -1,5 +1,9 @@
 {
   "private": true,
+  "engine": {
+    "npm": "8.19.3",
+    "node": "18.13.0"
+  },
   "dependencies": {
     "@database-revisions/cli": "file:../../packages/cli",
     "@database-revisions/mongodb": "file:../../packages/mongodb",

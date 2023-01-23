@@ -6,8 +6,8 @@
   "license": "MIT",
   "main": "./build/index.js",
   "engine": {
-    "npm": "8.19.2",
-    "node": "16.18.1"
+    "npm": "8.19.3",
+    "node": "18.13.0"
   },
   "type": "commonjs",
   "scripts": {
