@@ -1,4 +1,4 @@
-import { writeFileSync } from 'fs'
+import { existsSync, writeFileSync } from 'fs'
 import path from 'path'
 
 import prompts from 'prompts'
@@ -12,25 +12,27 @@ export const command: LocalCommand = async (
   ...args: string[]
 ): Promise<void> => {
   console.log('Initialize project...')
-  printConfig(config)
   const filePath = path.resolve(
     process.cwd(),
     './revisions.config.js'
   )
-  const { canOverwrite } = await prompts([
-    {
-      style: 'emoji',
-      type: 'toggle',
-      name: 'canOverwrite',
-      message: 'Config already exists. Do you want to overwrite file?',
-      initial: false,
-      active: 'yes',
-      inactive: 'no'
+  if (existsSync(filePath)) {
+    printConfig(config)
+    const { canOverwrite } = await prompts([
+      {
+        style: 'emoji',
+        type: 'toggle',
+        name: 'canOverwrite',
+        message: 'Config already exists. Do you want to overwrite file?',
+        initial: false,
+        active: 'yes',
+        inactive: 'no'
+      }
+    ])
+    if (!(canOverwrite as boolean)) {
+      console.log('abort!')
+      return
     }
-  ])
-  if (!(canOverwrite as boolean)) {
-    console.log('abort!')
-    return
   }
   const {
     namespace,
