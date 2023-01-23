@@ -1,9 +1,11 @@
-import { existsSync, writeFileSync } from 'fs'
-import path from 'path'
-
 import prompts from 'prompts'
+import { saveConfig } from '../config'
 
-import { REVISIONS_MODULES } from '../constants'
+import {
+  DEFAULT_REVISIONS_DIRECTORY,
+  DEFAULT_REVISIONS_NAMESPACE,
+  REVISIONS_MODULES
+} from '../constants'
 import { printConfig } from '../print'
 import { Config, LocalCommand } from '../types'
 
@@ -12,11 +14,8 @@ export const command: LocalCommand = async (
   ...args: string[]
 ): Promise<void> => {
   console.log('Initialize project...')
-  const filePath = path.resolve(
-    process.cwd(),
-    './revisions.config.js'
-  )
-  if (existsSync(filePath)) {
+  const hasExistingConfig = config !== undefined
+  if (hasExistingConfig) {
     printConfig(config)
     const { canOverwrite } = await prompts([
       {
@@ -44,82 +43,53 @@ export const command: LocalCommand = async (
       type: 'text',
       name: 'namespace',
       message: 'What is your application name?',
-      initial: 'default'
+      initial: DEFAULT_REVISIONS_NAMESPACE
     },
     {
       type: 'text',
       name: 'directory',
       message: 'Where will you store revision files?',
-      initial: './revisions'
+      initial: DEFAULT_REVISIONS_DIRECTORY
     },
     {
       type: 'select',
       name: 'connectionManagerModuleName',
       message: 'What connection manager will you be using?',
-      choices: REVISIONS_MODULES.map(({
-        moduleName
-      }) => ({
-        title: moduleName,
-        value: moduleName
-      })).concat({
-        title: 'No thanks. I want to implement my own.',
-        value: 'custom'
-      })
+      choices: REVISIONS_MODULES
+        .map(({ moduleName }) => ({
+          title: moduleName,
+          value: moduleName
+        }))
+        .concat({
+          title: 'No thanks. I want to implement my own.',
+          value: 'custom'
+        })
     },
     {
       type: 'select',
       name: 'stateManagerModuleName',
       message: 'What state manager will you be using?',
-      choices: REVISIONS_MODULES.map(({
-        moduleName
-      }) => ({
-        title: moduleName,
-        value: moduleName
-      })).concat({
-        title: 'No thanks. I want to implement my own.',
-        value: 'custom'
-      })
+      choices: REVISIONS_MODULES
+        .map(({ moduleName }) => ({
+          title: moduleName,
+          value: moduleName
+        }))
+        .concat({
+          title: 'No thanks. I want to implement my own.',
+          value: 'custom'
+        })
     }
   ])
-  const hasCustomConnectionManager = connectionManagerModuleName === 'custom'
-  const hasCustomStateManager = stateManagerModuleName === 'custom'
-  const fileContentLines = []
-  fileContentLines.push('const path = require("path");')
-  fileContentLines.push('module.exports = {')
-  fileContentLines.push(
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    `  revisionsNamespace: '${namespace}',`
-  )
-  fileContentLines.push(
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    `  revisionsDirectory: path.resolve(__dirname, '${directory}'),`
-  )
-  if (hasCustomConnectionManager) {
-    fileContentLines.push('  connectionManagerModule: {')
-    fileContentLines.push('    getConnectionManager: () => {')
-    fileContentLines.push('      throw new Error("not implemented");')
-    fileContentLines.push('    },')
-    fileContentLines.push('  },')
-  } else {
-    fileContentLines.push(
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      `  connectionManagerModule: require('${connectionManagerModuleName}'),`
-    )
-  }
-  if (hasCustomStateManager) {
-    fileContentLines.push('  stateManagerModule: {')
-    fileContentLines.push('    getStateManager: () => {')
-    fileContentLines.push('      throw new Error("not implemented");')
-    fileContentLines.push('    },')
-    fileContentLines.push('  },')
-  } else {
-    fileContentLines.push(
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      `  stateManagerModule: require('${stateManagerModuleName}'),`
-    )
-  }
-  fileContentLines.push('}')
-  const fileContent = fileContentLines.join('\n')
-  writeFileSync(filePath, fileContent)
-  console.log(`config file: ${filePath}`)
+  await saveConfig({
+    namespace,
+    directory,
+    connectionManagerModuleName:
+      connectionManagerModuleName === 'custom'
+        ? undefined
+        : connectionManagerModuleName,
+    stateManagerModuleName:
+      stateManagerModuleName === 'custom'
+        ? undefined
+        : stateManagerModuleName
+  })
 }

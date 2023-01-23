@@ -9,13 +9,12 @@ import { command as listCommand } from './command/list'
 import { command as upCommand } from './command/up'
 import { command as downCommand } from './command/down'
 import { command as helpCommand } from './command/help'
-import { Config, LocalCommand, RemoteCommand } from './types'
+import { LocalCommand, RemoteCommand } from './types'
 import {
   IConnectionManager, IStateManager
 } from '@database-revisions/types'
-import path from 'path'
-import { existsSync } from 'fs'
 import { printUsage } from './print'
+import { loadConfig } from './config'
 
 const loadLocalCommand = (commandName: string): LocalCommand | undefined => {
   const command: LocalCommand | undefined = {
@@ -36,16 +35,6 @@ const loadRemoteCommand = (commandName: string): RemoteCommand | undefined => {
   return command
 }
 
-const loadConfig = (): Config | undefined => {
-  const configPath = process.env.REVISIONS_CONFIG ?? path.resolve(
-    process.cwd(),
-    './revisions.config.js'
-  )
-  if (existsSync(configPath)) {
-    return require(configPath)
-  }
-}
-
 export const main = async (): Promise<void> => {
   const args = process.argv.slice(2)
   if (args.length === 0) {
@@ -54,7 +43,7 @@ export const main = async (): Promise<void> => {
   }
   const commandName = args[0]
   const remoteCommand = loadRemoteCommand(commandName)
-  const config = loadConfig()
+  const config = await loadConfig()
   if (remoteCommand !== undefined) {
     if (config === undefined) {
       console.error('Missing revisions config.')

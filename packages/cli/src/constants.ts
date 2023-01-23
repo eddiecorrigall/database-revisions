@@ -12,6 +12,7 @@ export const REVISIONS_MODULES: Array<{
   }
 ]
 
-export const DEFAULT_REVISIONS_CONFIG = './revisions.config.js'
-export const DEFAULT_REVISIONS_DIRECTORY = './revisions'
+export const DEFAULT_REVISIONS_NAMESPACE = 'default'
+export const DEFAULT_REVISIONS_CONFIG = 'revisions.config.js'
+export const DEFAULT_REVISIONS_DIRECTORY = 'revisions'
 export const DEFAULT_REVISIONS_MODULE = REVISIONS_MODULES[0].moduleName
