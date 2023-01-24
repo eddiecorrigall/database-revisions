@@ -5,8 +5,8 @@
     "node": "18.13.0"
   },
   "dependencies": {
-    "@database-revisions/cli": "file:../../packages/cli",
-    "@database-revisions/mongodb": "file:../../packages/mongodb",
+    "@database-revisions/cli": "^0.2.0",
+    "@database-revisions/mongodb": "^0.0.0",
     "mongoose": "^6.8.4"
   }
 }
