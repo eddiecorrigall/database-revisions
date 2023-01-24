@@ -1,7 +1,7 @@
 {
   "private": false,
   "name": "@database-revisions/mongodb",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "Eddie Corrigall <eddiecorrigall@gmail.com>",
   "license": "MIT",
   "main": "./build/index.js",
