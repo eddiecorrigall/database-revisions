@@ -4,7 +4,7 @@
 
 Written in JavaScript, database-revisions is a lightweight database migration tool for usage with SQL and no-SQL databases such as MongoDB and PostgreSQL.
 
-Try the [DEMO](./demo/README.md)!
+Try the [DEMO](https://github.com/eddiecorrigall/database-revisions/tree/master/demo#readme)!
 
 ## Goals
 - Revision immutability for reproducible database migrations
@@ -14,9 +14,9 @@ Try the [DEMO](./demo/README.md)!
 ## Subprojects
 
 - Command-line Interface:
-  - [@database-revisions/cli](./packages/cli/README.md)
+  - [@database-revisions/cli](https://github.com/eddiecorrigall/database-revisions/tree/master/packages/cli#readme)
 - TypeScript Development:
-  - [@database-revisions/types](./packages/types/README.md)
+  - [@database-revisions/types](https://github.com/eddiecorrigall/database-revisions/tree/master/packages/types#readme)
 - Database Implementations:
-  - [@database-revisions/mongodb](./packages/mongodb/README.md)
-  - [@database-revisions/postgresql](./packages/postgresql/README.md)
+  - [@database-revisions/mongodb](https://github.com/eddiecorrigall/database-revisions/tree/master/packages/mongodb#readme)
+  - [@database-revisions/postgresql](https://github.com/eddiecorrigall/database-revisions/tree/master/packages/postgresql#readme)

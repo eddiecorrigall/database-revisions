@@ -6,13 +6,11 @@ Please note the following requirements:
 - `npm` to manage NodeJS project including scripts and project dependencies
 - NodeJS project dependencies
 
-Please, change directory into one of the demo subfolders:
-- [MongoDB](./mongodb)
-- [PostgreSQL](./postgresql)
+Please, change directory into one of the demo subfolders.
 
 ```bash
 # Change directory into the PostgreSQL demo folder
-cd ~/repos/database-revisions/demo/postgresql
+cd postgresql
 ```
 
 Then, run the following commands to prepare the demo dependencies.
