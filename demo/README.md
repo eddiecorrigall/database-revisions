@@ -19,7 +19,7 @@ Then, run the following commands to prepare the demo dependencies.
 
 ```bash
 # Provision a local test database
-docker compose up --detach postgresql
+docker compose up --detach
 
 # Install dependencies
 npm install

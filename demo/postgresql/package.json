@@ -5,7 +5,7 @@
     "node": "18.13.0"
   },
   "dependencies": {
-    "@database-revisions/cli": "file:../../packages/cli",
-    "@database-revisions/postgresql": "file:../../packages/postgresql"
+    "@database-revisions/cli": "^0.2.0",
+    "@database-revisions/postgresql": "^0.0.0"
   }
 }
