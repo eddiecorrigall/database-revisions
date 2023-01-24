@@ -15,6 +15,7 @@ Candidates for database implementations require support for:
 
 | Command             | Description                                      |
 | ------------------- | ------------------------------------------------ |
+| `init`              | interactive prompt for project and config setup  |
 | `new [description]` | create a new revision                            |
 | `version`           | show the current persisted version               |
 | `list`              | list revision files                              |
