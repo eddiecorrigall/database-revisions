@@ -28,5 +28,5 @@
   "bugs": {
     "url": "https://github.com/eddiecorrigall/database-revisions/issues"
   },
-  "homepage": "https://github.com/eddiecorrigall/database-revisions/mongodb#readme"
+  "homepage": "https://github.com/eddiecorrigall/database-revisions/tree/master/packages/mongodb#readme"
 }

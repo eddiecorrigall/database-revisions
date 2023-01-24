@@ -22,14 +22,6 @@ Candidates for database implementations require support for:
 | `down`              | downgrade database using **current revision**    |
 | `help`              | show help menu                                   |
 
-## Demo
-
-Please note the following requirements:
-- `docker` + `docker compose` for provisioning a database locally
-- `node` run the tool by interpreting the JavaScript code
-- `npm` to manage NodeJS project including scripts and project dependencies
-- NodeJS project dependencies
-
 ### Installation
 
 ```bash
@@ -45,63 +37,9 @@ npm install @database-revisions/postgres
 
 # Configure CLI tool
 npx db init
-```
 
-### Demos
-
-First change directory into one of the demo folders listed below.
-- [PostgreSQL](./demo/postgresql)
-- [MongoDB](./demo/mongodb)
-
-Example: `cd ./demo/postgresql`
-
-Then, run the following commands.
-
-```bash
-# Provision a local test database
-docker compose up --detach
-
-# Source environment variables for db connection
-source ./env.bash
-
-# Install dependencies
-npm install
-```
-
-### Perform Database Migration
-
-```bash
-# List all revisions
-db list
-
-# Upgrade all pending revisions
-db up
-
-# Show current version
-db version
-```
-
-
-### Inspect Changes to Demo Database
-
-The following guide demonstrates to the reader how to inspect changes performed on the local database by the tool.
-
-```bash
-# List the running docker processes
-docker ps
-
-# Connect to postgresql demo container hosting the database
-docker exec --interactive --tty \
-  database-revisions-postgresql-1 /bin/sh
-
-# Use a Postgres CLI to connect to the database
-psql
-
-# Query the migrations table
-SELECT * FROM migrations;
-
-# Query the users table
-SELECT * FROM users;
+# Print out help
+npx db help
 ```
 
 ## How It Works
