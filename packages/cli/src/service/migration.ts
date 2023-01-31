@@ -77,16 +77,15 @@ export class MigrationService<Client> implements IMigrationService<Client> {
       await up(client)
     }
 
-    if (pendingRevisionModules.length > 0) {
-      const finalRevision = pendingRevisionModules[
-        pendingRevisionModules.length - 1
-      ]
-      await this.state.setCurrentRevision(
-        client,
-        request.namespace,
-        finalRevision
-      )
-    }
+    const finalRevision = pendingRevisionModules[
+      pendingRevisionModules.length - 1
+    ]
+
+    await this.state.setCurrentRevision(
+      client,
+      request.namespace,
+      finalRevision
+    )
 
     return upgradePath
   }
