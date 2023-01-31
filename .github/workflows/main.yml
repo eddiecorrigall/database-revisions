@@ -14,23 +14,40 @@ jobs:
         with:
           node-version: '16.18.1'
           cache: 'npm'
-      - run: npm audit --audit-level low && npm install && npm run build
+      - name: build types package
+        run: npm audit --audit-level low && npm install && npm run build
         working-directory: packages/types
-      - run: npm audit --audit-level low && npm install && npm run build
+      - name: build mongodb package
+        run: npm audit --audit-level none && npm install && npm run build
         working-directory: packages/mongodb
-      - run: npm audit --audit-level low && npm install && npm run build
+      - name: build postresql package
+        run: npm audit --audit-level none && npm install && npm run build
         working-directory: packages/postgresql
-      - run: npm audit --audit-level low && npm install && npm run build
+      - name: build cli package
+        run: npm audit --audit-level none && npm install && npm run build
         working-directory: packages/cli
-      - run: npm audit --audit-level low && npm install
+      - name: setup project development
+        run: npm audit --audit-level none && npm install
       - run: npm run test
       - run: npm run lint
-      - name: Save Artifact CLI
+      - name: save artifact
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: database-revisions-artifact
           path: |
+            packages/types/build
+            packages/types/package.json
+            packages/types/package-lock.json
+
+            packages/mongodb/build
+            packages/mongodb/package.json
+            packages/mongodb/package-lock.json
+
+            packages/postgresql/build
+            packages/postgresql/package.json
+            packages/postgresql/package-lock.json
+
             packages/cli/build
             packages/cli/package.json
             packages/cli/package-lock.json
