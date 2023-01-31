@@ -7,6 +7,7 @@ for package in types mongodb postgresql cli; do
   (
     cd "packages/$package"
     rm -fr node_modules
+    npm audit --level none
     npm install
     npm run clean
     npm run build
